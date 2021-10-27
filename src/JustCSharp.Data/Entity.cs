@@ -12,7 +12,12 @@ namespace JustCSharp.Data
         public string CreatedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public string ModifiedBy { get; set; }
-        
+
+        public object GetKey()
+        {
+            return Id;
+        }
+
         public void CheckAndSetId()
         {
             if (Id == Guid.Empty)

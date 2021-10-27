@@ -5,12 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\JustCSharp.Data\JustCSharp.Data.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="JustCSharp.Core.Module" Version="1.0.1" />
-      <PackageReference Include="JustCSharp.Core.Utility" Version="1.0.1" />
     </ItemGroup>
 
 </Project>

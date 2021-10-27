@@ -4,6 +4,7 @@ namespace JustCSharp.Data
 {
     public interface IEntity
     {
+        object GetKey();
         void CheckAndSetId();
     }
     
