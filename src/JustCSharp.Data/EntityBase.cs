@@ -2,9 +2,9 @@ using System;
 
 namespace JustCSharp.Data
 {
-    public class Entity: IEntity, ISoftDelete, IAuditable
+    public abstract class EntityBase<TKey>: IEntity, ISoftDelete, IAuditable
     {
-        public Guid Id { get; set; }
+        public TKey Id { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? DeletedOn { get; set; }
         public string DeletedBy { get; set; }
@@ -13,22 +13,14 @@ namespace JustCSharp.Data
         public DateTime? ModifiedOn { get; set; }
         public string ModifiedBy { get; set; }
 
-        public object GetKey()
+        public virtual object GetKey()
         {
             return Id;
         }
 
-        public void CheckAndSetId()
-        {
-            if (Id == Guid.Empty)
-            {
-                return;
-            }
-            
-            Id = Guid.NewGuid();
-        }
+        public abstract void CheckAndSetId();
         
-        public void CheckAndSetAudit(string currentUser)
+        public virtual void CheckAndSetAudit(string currentUser)
         {
             var curTime = DateTime.UtcNow;
 
@@ -42,14 +34,14 @@ namespace JustCSharp.Data
             }
         }
         
-        public void CheckAndSetDeleteAudit(string currentUser)
+        public virtual void CheckAndSetDeleteAudit(string currentUser)
         {
             var curTime = DateTime.UtcNow;
             DeletedOn = curTime;
             DeletedBy = currentUser;
         }
 
-        public bool IsHardDeleted()
+        public virtual bool IsHardDeleted()
         {
             return IsDeleted;
         }
