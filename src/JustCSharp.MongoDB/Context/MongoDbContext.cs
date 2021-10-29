@@ -13,7 +13,7 @@ namespace JustCSharp.MongoDB.Context
 {
     public class MongoDbContext: IMongoDbContext
     {
-        protected readonly ConcurrentDictionary<Type, MongoEntityModel> ModelCache = new ConcurrentDictionary<Type, MongoEntityModel>();
+        public ConcurrentDictionary<Type, MongoEntityModel> ModelCache { get; private set; }
         
         public IMongoClient Client { get; private set; }
 
@@ -23,10 +23,16 @@ namespace JustCSharp.MongoDB.Context
 
         public virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle)
         {
+            InitializeCollections();
+            InitializeDatabase(database, client, sessionHandle, ModelCache);
+        }
+        
+        public virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle, ConcurrentDictionary<Type, MongoEntityModel> modelCache)
+        {
             Database = database;
             Client = client;
             SessionHandle = sessionHandle;
-            InitializeCollections();
+            ModelCache = modelCache;
         }
 
         public virtual IMongoCollection<T> Collection<T>()

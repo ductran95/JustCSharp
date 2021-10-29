@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Core.Utility.Extensions;
@@ -12,6 +13,8 @@ namespace JustCSharp.MongoDB.Context
 {
     public class UowMongoDbContextProvider: IMongoDbContextProvider
     {
+        protected readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, MongoEntityModel>> DbModelCache = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, MongoEntityModel>>();
+        
         private readonly IServiceProvider _serviceProvider;
         private readonly IUnitOfWorkProvider _unitOfWorkProvider;
         private readonly MongoDbContextOptions _mongoDbContextOptions;
@@ -164,7 +167,17 @@ namespace JustCSharp.MongoDB.Context
             
             var dbContext = Activator.CreateInstance<TDbContext>();
 
-            dbContext.InitializeDatabase(database, client, session);
+            var modelCache = DbModelCache.GetOrDefault(typeof(TDbContext));
+            if (modelCache == null)
+            {
+                dbContext.InitializeDatabase(database, client, session);
+                modelCache = dbContext.ModelCache;
+                DbModelCache.TryAdd(typeof(TDbContext), modelCache);
+            }
+            else
+            {
+                dbContext.InitializeDatabase(database, client, session, modelCache);
+            }
 
             return dbContext;
         }
@@ -187,7 +200,17 @@ namespace JustCSharp.MongoDB.Context
             
             var dbContext = Activator.CreateInstance<TDbContext>();
 
-            dbContext.InitializeDatabase(database, client, session);
+            var modelCache = DbModelCache.GetOrDefault(typeof(TDbContext));
+            if (modelCache == null)
+            {
+                dbContext.InitializeDatabase(database, client, session);
+                modelCache = dbContext.ModelCache;
+                DbModelCache.TryAdd(typeof(TDbContext), modelCache);
+            }
+            else
+            {
+                dbContext.InitializeDatabase(database, client, session, modelCache);
+            }
 
             return dbContext;
         }
