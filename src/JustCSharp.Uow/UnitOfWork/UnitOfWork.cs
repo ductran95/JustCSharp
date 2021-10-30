@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using JustCSharp.Core.Utility.Extensions;
+using JustCSharp.Utility.Extensions;
 
 namespace JustCSharp.Uow.UnitOfWork
 {

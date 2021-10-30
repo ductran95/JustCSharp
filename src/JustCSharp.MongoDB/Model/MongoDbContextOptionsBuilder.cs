@@ -4,7 +4,7 @@ using JustCSharp.MongoDB.Context;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
-using JustCSharp.Core.Utility.Extensions;
+using JustCSharp.Utility.Extensions;
 
 namespace JustCSharp.MongoDB.Model
 {

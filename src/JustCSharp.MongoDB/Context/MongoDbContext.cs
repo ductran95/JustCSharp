@@ -2,12 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
-using JustCSharp.Core.Utility.Extensions;
-using JustCSharp.Core.Utility.Helpers;
-using JustCSharp.Data;
 using JustCSharp.Data.Entities;
 using JustCSharp.MongoDB.Attribute;
 using JustCSharp.MongoDB.Model;
+using JustCSharp.Utility.Extensions;
+using JustCSharp.Utility.Helpers;
 using MongoDB.Driver;
 
 namespace JustCSharp.MongoDB.Context
