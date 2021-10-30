@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Authentication;
 using JustCSharp.Data;
+using JustCSharp.Data.Entities;
 using JustCSharp.MongoDB.Context;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;

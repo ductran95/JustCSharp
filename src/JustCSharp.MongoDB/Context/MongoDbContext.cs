@@ -5,6 +5,7 @@ using System.Reflection;
 using JustCSharp.Core.Utility.Extensions;
 using JustCSharp.Core.Utility.Helpers;
 using JustCSharp.Data;
+using JustCSharp.Data.Entities;
 using JustCSharp.MongoDB.Attribute;
 using JustCSharp.MongoDB.Model;
 using MongoDB.Driver;

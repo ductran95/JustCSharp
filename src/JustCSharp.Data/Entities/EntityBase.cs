@@ -1,6 +1,6 @@
 using System;
 
-namespace JustCSharp.Data
+namespace JustCSharp.Data.Entities
 {
     public abstract class EntityBase<TKey>: IEntity, ISoftDelete, IAuditable
     {

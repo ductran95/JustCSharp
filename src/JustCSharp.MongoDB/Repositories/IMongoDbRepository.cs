@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using JustCSharp.Data;
+using JustCSharp.Data.Entities;
 using JustCSharp.Uow;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;

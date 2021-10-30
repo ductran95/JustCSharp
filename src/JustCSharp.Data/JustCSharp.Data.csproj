@@ -4,4 +4,8 @@
         <TargetFrameworks>net5.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Enums" />
+    </ItemGroup>
+
 </Project>

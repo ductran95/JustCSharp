@@ -1,4 +1,4 @@
-using JustCSharp.Data;
+using JustCSharp.Data.Entities;
 
 namespace JustCSharp.Uow
 {

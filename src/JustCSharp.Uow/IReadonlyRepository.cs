@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Data;
+using JustCSharp.Data.Entities;
 
 namespace JustCSharp.Uow
 {
