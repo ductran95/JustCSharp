@@ -5,12 +5,11 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Authentication;
-using JustCSharp.Data;
 using JustCSharp.Data.Entities;
 using JustCSharp.MongoDB.Context;
-using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+// ReSharper disable SuspiciousTypeConversion.Global
 
 namespace JustCSharp.MongoDB.Repositories
 {
@@ -18,13 +17,13 @@ namespace JustCSharp.MongoDB.Repositories
     {
         protected readonly IServiceProvider _serviceProvider;
         protected readonly IMongoDbContextProvider _dbContextProvider;
+        protected readonly IAuthContextProvider _authContextProvider;
 
-        public string CurrentUser => _serviceProvider.GetService<AuthContextBase>()?.UserId;
-        
-        public MongoDbRepository(IServiceProvider serviceProvider, IMongoDbContextProvider dbContextProvider)
+        public MongoDbRepository(IServiceProvider serviceProvider, IMongoDbContextProvider dbContextProvider, IAuthContextProvider authContextProvider)
         {
             _serviceProvider = serviceProvider;
             _dbContextProvider = dbContextProvider;
+            _authContextProvider = authContextProvider;
         }
 
         #region Data
@@ -103,7 +102,19 @@ namespace JustCSharp.MongoDB.Repositories
         {
             if (entity is IAuditable auditableEntity)
             {
-                auditableEntity.CheckAndSetAudit(CurrentUser);
+                var authContext = _authContextProvider.GetAuthContextBase();
+                var userId = authContext.UserId;
+                auditableEntity.CheckAndSetAudit(userId);
+            }
+        }
+        
+        protected virtual async Task SetAuditPropertiesAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            if (entity is IAuditable auditableEntity)
+            {
+                var authContext = await _authContextProvider.GetAuthContextBaseAsync(cancellationToken);
+                var userId = authContext.UserId;
+                auditableEntity.CheckAndSetAudit(userId);
             }
         }
         
@@ -111,7 +122,19 @@ namespace JustCSharp.MongoDB.Repositories
         {
             if (entity is ISoftDelete softDeleteEntity)
             {
-                softDeleteEntity.CheckAndSetDeleteAudit(CurrentUser);
+                var authContext = _authContextProvider.GetAuthContextBase();
+                var userId = authContext.UserId;
+                softDeleteEntity.CheckAndSetDeleteAudit(userId);
+            }
+        }
+        
+        protected virtual async Task SetDeleteAuditPropertiesAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            if (entity is ISoftDelete softDeleteEntity)
+            {
+                var authContext = await _authContextProvider.GetAuthContextBaseAsync(cancellationToken);
+                var userId = authContext.UserId;
+                softDeleteEntity.CheckAndSetDeleteAudit(userId);
             }
         }
         
@@ -131,16 +154,34 @@ namespace JustCSharp.MongoDB.Repositories
             SetAuditProperties(entity);
         }
         
+        protected virtual async Task PreInsertAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            CheckAndSetId(entity);
+            await SetAuditPropertiesAsync(entity, cancellationToken);
+        }
+        
         protected virtual void PreUpdate(TEntity entity)
         {
             CheckAndSetId(entity);
             SetAuditProperties(entity);
         }
         
+        protected virtual async Task PreUpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            CheckAndSetId(entity);
+            await SetAuditPropertiesAsync(entity, cancellationToken);
+        }
+        
         protected virtual void PreDelete(TEntity entity)
         {
             CheckAndSetId(entity);
             SetDeleteAuditProperties(entity);
+        }
+        
+        protected virtual async Task PreDeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            CheckAndSetId(entity);
+            await SetDeleteAuditPropertiesAsync(entity, cancellationToken);
         }
         
         protected virtual bool IsHardDeleted(TEntity entity)
@@ -315,7 +356,7 @@ namespace JustCSharp.MongoDB.Repositories
 
         public async Task<TEntity> InsertAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
         {
-            PreInsert(entity);
+            await PreInsertAsync(entity, cancellationToken);
 
             var dbContext = await GetDbContextAsync(cancellationToken);
             var collection = dbContext.Collection<TEntity>();
@@ -380,7 +421,7 @@ namespace JustCSharp.MongoDB.Repositories
 
             foreach (var entity in entityArray)
             {
-                PreInsert(entity);
+                await PreInsertAsync(entity, cancellationToken);
             }
             
             var dbContext = await GetDbContextAsync(cancellationToken);
@@ -450,11 +491,11 @@ namespace JustCSharp.MongoDB.Repositories
 
         public async Task<TEntity> UpdateAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
         {
-            PreUpdate(entity);
+            await PreUpdateAsync(entity, cancellationToken);
             
             if (entity is ISoftDelete softDeleteEntity && softDeleteEntity.IsDeleted)
             {
-                PreDelete(entity);
+                await PreDeleteAsync(entity, cancellationToken);
             }
             
             var oldConcurrencyStamp = SetConcurrencyStamp(entity);
@@ -538,12 +579,12 @@ namespace JustCSharp.MongoDB.Repositories
 
             foreach (var entity in entityArray)
             {
-                PreUpdate(entity);
+                await PreUpdateAsync(entity, cancellationToken);
 
                 var isSoftDeleteEntity = typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity));
                 if (isSoftDeleteEntity)
                 {
-                    PreDelete(entity);
+                    await PreDeleteAsync(entity, cancellationToken);
                 }
 
                 SetConcurrencyStamp(entity);
@@ -640,7 +681,7 @@ namespace JustCSharp.MongoDB.Repositories
         public async Task DeleteAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
         {
             var isHardDelete = IsHardDeleted(entity);
-            PreDelete(entity);
+            await PreDeleteAsync(entity, cancellationToken);
             
             var dbContext = await GetDbContextAsync(cancellationToken);
             var collection = dbContext.Collection<TEntity>();
@@ -784,7 +825,7 @@ namespace JustCSharp.MongoDB.Repositories
             foreach (var entity in entities)
             {
                 var isHardDelete = IsHardDeleted(entity);
-                PreDelete(entity);
+                await PreDeleteAsync(entity, cancellationToken);
                 
                 if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)) && !isHardDelete)
                 {

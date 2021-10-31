@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Utility.Extensions;
+// ReSharper disable SuspiciousTypeConversion.Global
 
 namespace JustCSharp.Uow.UnitOfWork
 {
     public class UnitOfWork: IUnitOfWork
     {
-        private readonly Dictionary<Type, IDatabase> _databases;
+        protected readonly Dictionary<Type, IDatabase> _databases;
 
         public UnitOfWork()
         {
