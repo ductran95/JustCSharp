@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using JustCSharp.Data.Entities;
@@ -7,13 +8,15 @@ using JustCSharp.MongoDB.Attribute;
 using JustCSharp.MongoDB.Model;
 using JustCSharp.Utility.Extensions;
 using JustCSharp.Utility.Helpers;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace JustCSharp.MongoDB.Context
 {
     public class MongoDbContext: IMongoDbContext
     {
-        public ConcurrentDictionary<Type, MongoEntityModel> ModelCache { get; private set; }
+        public Dictionary<Type, IMongoEntityModel> ModelCache { get; private set; }
         
         public IMongoClient Client { get; private set; }
 
@@ -27,7 +30,7 @@ namespace JustCSharp.MongoDB.Context
             InitializeDatabase(database, client, sessionHandle, ModelCache);
         }
         
-        public virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle, ConcurrentDictionary<Type, MongoEntityModel> modelCache)
+        public virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle, Dictionary<Type, IMongoEntityModel> modelCache)
         {
             Database = database;
             Client = client;
@@ -42,6 +45,9 @@ namespace JustCSharp.MongoDB.Context
 
         public virtual void InitializeCollections()
         {
+            var modelBuilder = new MongoModelBuilder();
+            
+            // Invoke MongoCollectionAttribute
             var collectionProperties =
                 from property in this.GetType().GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 where
@@ -54,11 +60,46 @@ namespace JustCSharp.MongoDB.Context
                 var entityType = collectionProperty.PropertyType.GenericTypeArguments[0];
                 var collectionAttribute = collectionProperty.GetCustomAttributes().OfType<MongoCollectionAttribute>().FirstOrDefault();
 
-                ModelCache.GetOrAdd(entityType, () => new MongoEntityModel()
+                modelBuilder.Entity(entityType, b =>
                 {
-                    EntityType = entityType,
-                    CollectionName = collectionAttribute?.CollectionName ?? collectionProperty.Name
+                    b.CollectionName = collectionAttribute?.CollectionName ?? collectionProperty.Name;
                 });
+            }
+            
+            // Invoke CreateModel
+            CreateModel(modelBuilder);
+            
+            // Build Model
+            var entityModels = modelBuilder.GetEntities()
+                .ToDictionary(x=>x.EntityType, x=>x);
+            
+            foreach (var entityModel in entityModels.Values)
+            {
+                var map = entityModel.BsonMap;
+                if (!BsonClassMap.IsClassMapRegistered(map.ClassType))
+                {
+                    BsonClassMap.RegisterClassMap(map);
+                }
+
+                CreateCollectionIfNotExists(entityModel.CollectionName);
+            }
+
+            ModelCache = entityModels;
+        }
+
+        protected virtual void CreateModel(MongoModelBuilder modelBuilder)
+        {
+            
+        }
+        
+        protected virtual void CreateCollectionIfNotExists(string collectionName)
+        {
+            var filter = new BsonDocument("name", collectionName);
+            var options = new ListCollectionNamesOptions { Filter = filter };
+
+            if (!Database.ListCollectionNames(options).Any())
+            {
+                Database.CreateCollection(collectionName);
             }
         }
 
@@ -67,7 +108,7 @@ namespace JustCSharp.MongoDB.Context
             return GetEntityModel<T>().CollectionName;
         }
 
-        protected virtual MongoEntityModel GetEntityModel<TEntity>()
+        protected virtual IMongoEntityModel GetEntityModel<TEntity>()
         {
             var model = ModelCache.GetOrDefault(typeof(TEntity));
 

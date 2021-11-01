@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.MongoDB.Model;
@@ -13,7 +14,7 @@ namespace JustCSharp.MongoDB.Context
 {
     public class UowMongoDbContextProvider: IMongoDbContextProvider
     {
-        protected readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, MongoEntityModel>> DbModelCache = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, MongoEntityModel>>();
+        protected readonly ConcurrentDictionary<Type, Dictionary<Type, IMongoEntityModel>> DbModelCache = new ConcurrentDictionary<Type, Dictionary<Type, IMongoEntityModel>>();
         
         private readonly IServiceProvider _serviceProvider;
         private readonly IUnitOfWorkProvider _unitOfWorkProvider;

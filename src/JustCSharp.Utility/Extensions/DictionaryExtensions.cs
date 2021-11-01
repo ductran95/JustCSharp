@@ -22,6 +22,11 @@ namespace JustCSharp.Utility.Extensions
             return dictionary[key] = factory(key);
         }
         
+        public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue> factory)
+        {
+            return dictionary.GetOrAdd(key, k => factory());
+        }
+        
         public static TValue GetOrAdd<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> factory)
         {
             return dictionary.GetOrAdd(key, k => factory());
