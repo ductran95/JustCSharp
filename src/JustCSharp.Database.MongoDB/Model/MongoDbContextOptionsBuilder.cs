@@ -54,6 +54,13 @@ namespace JustCSharp.Database.MongoDB.Model
             return this;
         }
         
+        public MongoDbContextOptionsBuilder<TDbContext> UseLazyConnect(bool lazyConnect = true)
+        {
+            _options.LazyConnect = lazyConnect;
+
+            return this;
+        }
+        
         public MongoDbContextOptionsBuilder<TDbContext> UseSettings(Action<MongoClientSettings> settingAction)
         {
             settingAction?.Invoke(_options.Settings);

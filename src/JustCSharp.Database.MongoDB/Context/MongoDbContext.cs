@@ -40,7 +40,7 @@ namespace JustCSharp.Database.MongoDB.Context
 
         #region Constructors
 
-        public MongoDbContext(MongoDbContextOptions<MongoDbContext> dbContextOptions, IUnitOfWork unitOfWork, IMongoEntityModelCache mongoEntityModelCache)
+        public MongoDbContext(MongoDbContextOptions dbContextOptions, IUnitOfWork unitOfWork, IMongoEntityModelCache mongoEntityModelCache)
         {
             _dbContextOptions = dbContextOptions;
             _unitOfWork = unitOfWork;
@@ -60,64 +60,6 @@ namespace JustCSharp.Database.MongoDB.Context
         public virtual IMongoCollection<T> Collection<T>()
         {
             return Database.GetCollection<T>(GetCollectionName<T>());
-        }
-
-        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle)
-        {
-            InitializeCollections();
-            InitializeDatabase(database, client, sessionHandle, EntityModels);
-        }
-        
-        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle, Dictionary<Type, IMongoEntityModel> entityModels)
-        {
-            Database = database;
-            Client = client;
-            SessionHandle = sessionHandle;
-            EntityModels = entityModels;
-        }
-
-        public virtual void InitializeCollections()
-        {
-            var modelBuilder = new MongoModelBuilder();
-            
-            // Invoke MongoCollectionAttribute
-            var collectionProperties =
-                from property in this.GetType().GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                where
-                    ReflectionHelper.IsAssignableToGenericType(property.PropertyType, typeof(IMongoCollection<>)) &&
-                    typeof(IEntity).IsAssignableFrom(property.PropertyType.GenericTypeArguments[0])
-                select property;
-
-            foreach (var collectionProperty in collectionProperties)
-            {
-                var entityType = collectionProperty.PropertyType.GenericTypeArguments[0];
-                var collectionAttribute = collectionProperty.GetCustomAttributes().OfType<MongoCollectionAttribute>().FirstOrDefault();
-
-                modelBuilder.Entity(entityType, b =>
-                {
-                    b.CollectionName = collectionAttribute?.CollectionName ?? collectionProperty.Name;
-                });
-            }
-            
-            // Invoke CreateModel
-            CreateModel(modelBuilder);
-            
-            // Build Model
-            var entityModels = modelBuilder.GetEntities()
-                .ToDictionary(x=>x.EntityType, x=>x);
-            
-            foreach (var entityModel in entityModels.Values)
-            {
-                var map = entityModel.BsonMap;
-                if (!BsonClassMap.IsClassMapRegistered(map.ClassType))
-                {
-                    BsonClassMap.RegisterClassMap(map);
-                }
-
-                CreateCollectionIfNotExists(entityModel.CollectionName);
-            }
-
-            EntityModels = entityModels;
         }
         
         public void CheckStateAndConnect()
@@ -213,6 +155,64 @@ namespace JustCSharp.Database.MongoDB.Context
             
             _isConnected = true;
         }
+        
+        protected virtual void InitializeCollections()
+        {
+            var modelBuilder = new MongoModelBuilder();
+            
+            // Invoke MongoCollectionAttribute
+            var collectionProperties =
+                from property in this.GetType().GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                where
+                    ReflectionHelper.IsAssignableToGenericType(property.PropertyType, typeof(IMongoCollection<>)) &&
+                    typeof(IEntity).IsAssignableFrom(property.PropertyType.GenericTypeArguments[0])
+                select property;
+
+            foreach (var collectionProperty in collectionProperties)
+            {
+                var entityType = collectionProperty.PropertyType.GenericTypeArguments[0];
+                var collectionAttribute = collectionProperty.GetCustomAttributes().OfType<MongoCollectionAttribute>().FirstOrDefault();
+
+                modelBuilder.Entity(entityType, b =>
+                {
+                    b.CollectionName = collectionAttribute?.CollectionName ?? collectionProperty.Name;
+                });
+            }
+            
+            // Invoke CreateModel
+            CreateModel(modelBuilder);
+            
+            // Build Model
+            var entityModels = modelBuilder.GetEntities()
+                .ToDictionary(x=>x.EntityType, x=>x);
+            
+            foreach (var entityModel in entityModels.Values)
+            {
+                var map = entityModel.BsonMap;
+                if (!BsonClassMap.IsClassMapRegistered(map.ClassType))
+                {
+                    BsonClassMap.RegisterClassMap(map);
+                }
+
+                CreateCollectionIfNotExists(entityModel.CollectionName);
+            }
+
+            EntityModels = entityModels;
+        }
+        
+        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle)
+        {
+            InitializeDatabase(database, client, sessionHandle, EntityModels);
+            InitializeCollections();
+        }
+        
+        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle, Dictionary<Type, IMongoEntityModel> entityModels)
+        {
+            Database = database;
+            Client = client;
+            SessionHandle = sessionHandle;
+            EntityModels = entityModels;
+        }
 
         protected virtual void CreateModel(MongoModelBuilder modelBuilder)
         {
@@ -247,7 +247,7 @@ namespace JustCSharp.Database.MongoDB.Context
             return model;
         }
 
-        private void ResolveConfig()
+        protected void ResolveConfig()
         {
             _mongoUrl = new MongoUrl(_dbContextOptions.ConnectionString);
             _databaseName = _mongoUrl.DatabaseName;

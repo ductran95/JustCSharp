@@ -27,12 +27,12 @@ namespace JustCSharp.Authentication
             return _authContext;
         }
 
-        public virtual IAuthContext CreateAuthContext()
+        protected virtual IAuthContext CreateAuthContext()
         {
             return new AuthContextBase();
         }
 
-        public virtual async Task<IAuthContext> CreateAuthContextAsync(CancellationToken cancellationToken = default)
+        protected virtual async Task<IAuthContext> CreateAuthContextAsync(CancellationToken cancellationToken = default)
         {
             return await Task.FromResult(new AuthContextBase());
         }
@@ -74,8 +74,8 @@ namespace JustCSharp.Authentication
             return _authContext;
         }
 
-        public abstract TAuthContext CreateAuthContext();
+        protected abstract TAuthContext CreateAuthContext();
 
-        public abstract Task<TAuthContext> CreateAuthContextAsync(CancellationToken cancellationToken = default);
+        protected abstract Task<TAuthContext> CreateAuthContextAsync(CancellationToken cancellationToken = default);
     }
 }

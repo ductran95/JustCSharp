@@ -10,7 +10,7 @@ namespace JustCSharp.Database.MongoDB.Model
         public string ConnectionStringName { get; set; }
         public string ConnectionString { get; set; }
         public int? Timeout { get; set; }
-        public bool LazyConnect { get; set; }
+        public bool LazyConnect { get; set; } = true;
         public MongoClientSettings Settings { get; set; }
     }
     
