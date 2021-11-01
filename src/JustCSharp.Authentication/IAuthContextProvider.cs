@@ -5,13 +5,16 @@ namespace JustCSharp.Authentication
 {
     public interface IAuthContextProvider
     {
-        AuthContextBase GetAuthContextBase();
-        Task<AuthContextBase> GetAuthContextBaseAsync(CancellationToken cancellationToken = default);
+        IAuthContext AuthContext { get; }
+        IAuthContext GetAuthContext();
+        Task<IAuthContext> GetAuthContextAsync(CancellationToken cancellationToken = default);
     }
     
-    public interface IAuthContextProvider<TAuthContext>: IAuthContextProvider where TAuthContext: AuthContextBase
+    public interface IAuthContextProviderOfT<TAuthContext>: IAuthContextProvider 
+        where TAuthContext: class, IAuthContext
     {
-        TAuthContext GetAuthContext();
-        Task<TAuthContext> GetAuthContextAsync(CancellationToken cancellationToken = default);
+        TAuthContext AuthContextOfT { get; }
+        TAuthContext GetAuthContextOfT();
+        Task<TAuthContext> GetTAuthContextOfTAsync(CancellationToken cancellationToken = default);
     }
 }

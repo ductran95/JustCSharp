@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using JustCSharp.Uow;
 
-namespace JustCSharp.MongoDB
+namespace JustCSharp.Database.MongoDB
 {
     public class MongoDbException: InfrastructureException
     {

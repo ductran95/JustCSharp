@@ -9,23 +9,24 @@ using JustCSharp.Utility.Extensions;
 
 namespace JustCSharp.Uow.UnitOfWork
 {
-    public class UnitOfWork: IUnitOfWork
+    public class UnitOfWorkBase: IUnitOfWork
     {
         protected readonly Dictionary<Type, IDatabase> _databases;
+        protected readonly Dictionary<Type, ITransaction> _transactions;
 
-        public UnitOfWork()
+        public UnitOfWorkBase()
         {
             _databases = new Dictionary<Type, IDatabase>();
         }
 
-        public bool IsTransactional { get; private set; }
+        public virtual bool IsTransactional { get; private set; }
 
-        public IDatabase FindDatabase([NotNull] Type type)
+        public virtual IDatabase FindDatabase([NotNull] Type type)
         {
             return _databases.GetOrDefault(type);
         }
 
-        public void AddDatabase([NotNull] Type type, [NotNull] IDatabase database)
+        public virtual void AddDatabase([NotNull] Type type, [NotNull] IDatabase database)
         {
             if (_databases.ContainsKey(type))
             {
@@ -35,7 +36,7 @@ namespace JustCSharp.Uow.UnitOfWork
             _databases.Add(type, database);
         }
 
-        public IDatabase GetOrAddDatabase([NotNull] Type type, Func<IDatabase> factory)
+        public virtual IDatabase GetOrAddDatabase([NotNull] Type type, Func<IDatabase> factory)
         {
             var db = FindDatabase(type);
             if (db == null)
@@ -46,8 +47,35 @@ namespace JustCSharp.Uow.UnitOfWork
 
             return db;
         }
+        
+        public virtual ITransaction FindTransaction([NotNull] Type type)
+        {
+            return _transactions.GetOrDefault(type);
+        }
 
-        public bool IsInTransaction()
+        public virtual void AddTransaction([NotNull] Type type, [NotNull] ITransaction database)
+        {
+            if (_databases.ContainsKey(type))
+            {
+                throw new InfrastructureException("There is already a transaction API in this unit of work with given type: " + type.Name);
+            }
+
+            _transactions.Add(type, database);
+        }
+
+        public virtual ITransaction GetOrAddTransaction([NotNull] Type type, Func<ITransaction> factory)
+        {
+            var db = FindTransaction(type);
+            if (db == null)
+            {
+                db = factory();
+                AddTransaction(type, db);
+            }
+
+            return db;
+        }
+
+        public virtual bool IsInTransaction()
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -68,7 +96,7 @@ namespace JustCSharp.Uow.UnitOfWork
             return true;
         }
 
-        public async Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default)
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -89,7 +117,7 @@ namespace JustCSharp.Uow.UnitOfWork
             return true;
         }
 
-        public void Begin()
+        public virtual void Begin()
         {
             this.IsTransactional = true;
             foreach (var databaseApi in GetAllActiveDatabases())
@@ -105,7 +133,7 @@ namespace JustCSharp.Uow.UnitOfWork
             }
         }
 
-        public async Task BeginAsync(CancellationToken cancellationToken = default)
+        public virtual async Task BeginAsync(CancellationToken cancellationToken = default)
         {
             this.IsTransactional = true;
             foreach (var databaseApi in GetAllActiveDatabases())
@@ -121,7 +149,7 @@ namespace JustCSharp.Uow.UnitOfWork
             }
         }
 
-        public void Commit()
+        public virtual void Commit()
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -136,7 +164,7 @@ namespace JustCSharp.Uow.UnitOfWork
             }
         }
 
-        public async Task CommitAsync(CancellationToken cancellationToken = default)
+        public virtual async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -151,7 +179,7 @@ namespace JustCSharp.Uow.UnitOfWork
             }
         }
 
-        public void Rollback()
+        public virtual void Rollback()
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -166,7 +194,7 @@ namespace JustCSharp.Uow.UnitOfWork
             }
         }
 
-        public async Task RollbackAsync(CancellationToken cancellationToken = default)
+        public virtual async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -181,7 +209,7 @@ namespace JustCSharp.Uow.UnitOfWork
             }
         }
 
-        public void SaveChanges()
+        public virtual void SaveChanges()
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -196,7 +224,7 @@ namespace JustCSharp.Uow.UnitOfWork
             }
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public virtual async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {

@@ -2,7 +2,7 @@ using System.Net;
 
 namespace JustCSharp.Authentication
 {
-    public class AuthContextBase: IAuthContext
+    public interface IAuthContext
     {
         public string UserId { get; set; }
         public string Token { get; set; }

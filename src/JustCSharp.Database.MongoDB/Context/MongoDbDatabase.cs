@@ -1,10 +1,10 @@
 using JustCSharp.Uow;
 
-namespace JustCSharp.MongoDB.Context
+namespace JustCSharp.Database.MongoDB.Context
 {
     public class MongoDbDatabase: IDatabase
     {
-        public IMongoDbContext DbContext { get; }
+        public IMongoDbContext DbContext { get; private set; }
 
         public MongoDbDatabase(IMongoDbContext dbContext)
         {

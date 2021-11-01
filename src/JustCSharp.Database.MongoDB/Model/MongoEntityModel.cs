@@ -1,7 +1,7 @@
 using System;
 using MongoDB.Bson.Serialization;
 
-namespace JustCSharp.MongoDB.Model
+namespace JustCSharp.Database.MongoDB.Model
 {
     public sealed class MongoEntityModel<TEntity>: IMongoEntityModel, IMongoEntityModel<TEntity>
     {

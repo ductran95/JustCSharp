@@ -5,7 +5,7 @@ using JustCSharp.Uow;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-namespace JustCSharp.MongoDB.Repositories
+namespace JustCSharp.Database.MongoDB.Repositories
 {
     public interface IMongoDbRepository<TEntity>: IRepository<TEntity> where TEntity : IEntity
     {

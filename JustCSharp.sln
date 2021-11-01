@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Data", "src\Just
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Uow", "src\JustCSharp.Uow\JustCSharp.Uow.csproj", "{11254ABF-A695-4BDD-A474-92480FD8A47B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.MongoDB", "src\JustCSharp.MongoDB\JustCSharp.MongoDB.csproj", "{B1C2BDF6-1949-483A-B820-553F62D18984}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Database.MongoDB", "src\JustCSharp.Database.MongoDB\JustCSharp.Database.MongoDB.csproj", "{B1C2BDF6-1949-483A-B820-553F62D18984}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Authentication", "src\JustCSharp.Authentication\JustCSharp.Authentication.csproj", "{59DCDC63-909A-41D6-BB49-AAD72CBD3C3D}"
 EndProject

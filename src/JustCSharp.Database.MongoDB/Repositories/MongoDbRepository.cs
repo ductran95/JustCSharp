@@ -6,66 +6,61 @@ using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Authentication;
 using JustCSharp.Data.Entities;
-using JustCSharp.MongoDB.Context;
+using JustCSharp.Database.MongoDB.Context;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+
 // ReSharper disable SuspiciousTypeConversion.Global
 
-namespace JustCSharp.MongoDB.Repositories
+namespace JustCSharp.Database.MongoDB.Repositories
 {
     public class MongoDbRepository<TDbContext, TEntity>: IMongoDbRepository<TEntity> where TDbContext: IMongoDbContext where TEntity : class, IEntity
     {
-        protected readonly IServiceProvider _serviceProvider;
-        protected readonly IMongoDbContextProvider _dbContextProvider;
+        protected readonly TDbContext _dbContext;
         protected readonly IAuthContextProvider _authContextProvider;
 
-        public MongoDbRepository(IServiceProvider serviceProvider, IMongoDbContextProvider dbContextProvider, IAuthContextProvider authContextProvider)
+        public MongoDbRepository(TDbContext dbContext, IAuthContextProvider authContextProvider)
         {
-            _serviceProvider = serviceProvider;
-            _dbContextProvider = dbContextProvider;
+            _dbContext = dbContext;
             _authContextProvider = authContextProvider;
         }
 
         #region Data
 
-        protected TDbContext GetDbContext()
-        {
-            return _dbContextProvider.GetDbContext<TDbContext>();
-        }
-
-        protected Task<TDbContext> GetDbContextAsync(CancellationToken cancellationToken = default)
-        {
-            return _dbContextProvider.GetDbContextAsync<TDbContext>(cancellationToken);
-        }
-        
         protected IClientSessionHandle GetSessionHandle()
         {
-            return GetDbContext().SessionHandle;
+            _dbContext.CheckStateAndConnect();
+            return _dbContext.SessionHandle;
         }
         
         protected async Task<IClientSessionHandle> GetSessionHandleAsync(CancellationToken cancellationToken = default)
         {
-            return (await GetDbContextAsync(cancellationToken)).SessionHandle;
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            return _dbContext.SessionHandle;
         }
         
         public IMongoDatabase GetDatabase()
         {
-            return GetDbContext().Database;
+            _dbContext.CheckStateAndConnect();
+            return _dbContext.Database;
         }
 
         public async Task<IMongoDatabase> GetDatabaseAsync(CancellationToken cancellationToken = default)
         {
-            return (await GetDbContextAsync(cancellationToken)).Database;
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            return _dbContext.Database;
         }
 
         public IMongoCollection<TEntity> GetCollection()
         {
-            return GetDbContext().Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            return _dbContext.Collection<TEntity>();
         }
 
         public async Task<IMongoCollection<TEntity>> GetCollectionAsync(CancellationToken cancellationToken = default)
         {
-            return (await GetDbContextAsync(cancellationToken)).Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            return _dbContext.Collection<TEntity>();
         }
 
         #endregion
@@ -102,7 +97,7 @@ namespace JustCSharp.MongoDB.Repositories
         {
             if (entity is IAuditable auditableEntity)
             {
-                var authContext = _authContextProvider.GetAuthContextBase();
+                var authContext = _authContextProvider.GetAuthContext();
                 var userId = authContext.UserId;
                 auditableEntity.CheckAndSetAudit(userId);
             }
@@ -112,7 +107,7 @@ namespace JustCSharp.MongoDB.Repositories
         {
             if (entity is IAuditable auditableEntity)
             {
-                var authContext = await _authContextProvider.GetAuthContextBaseAsync(cancellationToken);
+                var authContext = await _authContextProvider.GetAuthContextAsync(cancellationToken);
                 var userId = authContext.UserId;
                 auditableEntity.CheckAndSetAudit(userId);
             }
@@ -122,7 +117,7 @@ namespace JustCSharp.MongoDB.Repositories
         {
             if (entity is ISoftDelete softDeleteEntity)
             {
-                var authContext = _authContextProvider.GetAuthContextBase();
+                var authContext = _authContextProvider.GetAuthContext();
                 var userId = authContext.UserId;
                 softDeleteEntity.CheckAndSetDeleteAudit(userId);
             }
@@ -132,7 +127,7 @@ namespace JustCSharp.MongoDB.Repositories
         {
             if (entity is ISoftDelete softDeleteEntity)
             {
-                var authContext = await _authContextProvider.GetAuthContextBaseAsync(cancellationToken);
+                var authContext = await _authContextProvider.GetAuthContextAsync(cancellationToken);
                 var userId = authContext.UserId;
                 softDeleteEntity.CheckAndSetDeleteAudit(userId);
             }
@@ -244,47 +239,47 @@ namespace JustCSharp.MongoDB.Repositories
         
         public IMongoQueryable<TEntity> GetMongoQueryable()
         {
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
 
             return ApplyDataFilters(
-                dbContext.SessionHandle != null
-                    ? collection.AsQueryable(dbContext.SessionHandle)
+                _dbContext.SessionHandle != null
+                    ? collection.AsQueryable(_dbContext.SessionHandle)
                     : collection.AsQueryable()
             );
         }
 
         public async Task<IMongoQueryable<TEntity>> GetMongoQueryableAsync(CancellationToken cancellationToken = default)
         {
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
 
             return ApplyDataFilters(
-                dbContext.SessionHandle != null
-                    ? collection.AsQueryable(dbContext.SessionHandle)
+                _dbContext.SessionHandle != null
+                    ? collection.AsQueryable(_dbContext.SessionHandle)
                     : collection.AsQueryable()
             );
         }
 
         public IAggregateFluent<TEntity> GetAggregate()
         {
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
 
             return ApplyDataFilters(
-                dbContext.SessionHandle != null
-                    ? collection.Aggregate(dbContext.SessionHandle)
+                _dbContext.SessionHandle != null
+                    ? collection.Aggregate(_dbContext.SessionHandle)
                     : collection.Aggregate());
         }
 
         public async Task<IAggregateFluent<TEntity>> GetAggregateAsync(CancellationToken cancellationToken = default)
         {
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
 
             return ApplyDataFilters(
-                dbContext.SessionHandle != null
-                    ? collection.Aggregate(dbContext.SessionHandle)
+                _dbContext.SessionHandle != null
+                    ? collection.Aggregate(_dbContext.SessionHandle)
                     : collection.Aggregate());
         }
         
@@ -334,13 +329,13 @@ namespace JustCSharp.MongoDB.Repositories
         {
             PreInsert(entity);
 
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
 
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
                  collection.InsertOne(
-                    dbContext.SessionHandle,
+                    _dbContext.SessionHandle,
                     entity
                 );
             }
@@ -358,13 +353,13 @@ namespace JustCSharp.MongoDB.Repositories
         {
             await PreInsertAsync(entity, cancellationToken);
 
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
 
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
                 await collection.InsertOneAsync(
-                    dbContext.SessionHandle,
+                    _dbContext.SessionHandle,
                     entity,
                     cancellationToken: cancellationToken
                 );
@@ -389,8 +384,8 @@ namespace JustCSharp.MongoDB.Repositories
                 PreInsert(entity);
             }
             
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
             
             BulkWriteResult result;
 
@@ -400,9 +395,9 @@ namespace JustCSharp.MongoDB.Repositories
                 insertRequests.Add(new InsertOneModel<TEntity>(entity));
             }
 
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
-                result = collection.BulkWrite(dbContext.SessionHandle, insertRequests);
+                result = collection.BulkWrite(_dbContext.SessionHandle, insertRequests);
             }
             else
             {
@@ -424,8 +419,8 @@ namespace JustCSharp.MongoDB.Repositories
                 await PreInsertAsync(entity, cancellationToken);
             }
             
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
             
             BulkWriteResult result;
 
@@ -435,9 +430,9 @@ namespace JustCSharp.MongoDB.Repositories
                 insertRequests.Add(new InsertOneModel<TEntity>(entity));
             }
 
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
-                result = await collection.BulkWriteAsync(dbContext.SessionHandle, insertRequests, cancellationToken: cancellationToken);
+                result = await collection.BulkWriteAsync(_dbContext.SessionHandle, insertRequests, cancellationToken: cancellationToken);
             }
             else
             {
@@ -462,13 +457,13 @@ namespace JustCSharp.MongoDB.Repositories
             var oldConcurrencyStamp = SetConcurrencyStamp(entity);
             ReplaceOneResult result;
 
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
 
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
                 result = collection.ReplaceOne(
-                    dbContext.SessionHandle,
+                    _dbContext.SessionHandle,
                     CreateEntityFilter(entity, true, oldConcurrencyStamp),
                     entity
                 );
@@ -501,13 +496,13 @@ namespace JustCSharp.MongoDB.Repositories
             var oldConcurrencyStamp = SetConcurrencyStamp(entity);
             ReplaceOneResult result;
 
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
 
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
                 result = await collection.ReplaceOneAsync(
-                    dbContext.SessionHandle,
+                    _dbContext.SessionHandle,
                     CreateEntityFilter(entity, true, oldConcurrencyStamp),
                     entity,
                     cancellationToken: cancellationToken
@@ -547,8 +542,8 @@ namespace JustCSharp.MongoDB.Repositories
                 SetConcurrencyStamp(entity);
             }
 
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
 
             BulkWriteResult result;
 
@@ -558,9 +553,9 @@ namespace JustCSharp.MongoDB.Repositories
                 replaceRequests.Add(new ReplaceOneModel<TEntity>(CreateEntityFilter(entity), entity));
             }
             
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
-                result = collection.BulkWrite(dbContext.SessionHandle, replaceRequests);
+                result = collection.BulkWrite(_dbContext.SessionHandle, replaceRequests);
             }
             else
             {
@@ -590,8 +585,8 @@ namespace JustCSharp.MongoDB.Repositories
                 SetConcurrencyStamp(entity);
             }
 
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
 
             BulkWriteResult result;
 
@@ -601,9 +596,9 @@ namespace JustCSharp.MongoDB.Repositories
                 replaceRequests.Add(new ReplaceOneModel<TEntity>(CreateEntityFilter(entity), entity));
             }
             
-            if (dbContext.SessionHandle != null)
+            if (_dbContext.SessionHandle != null)
             {
-                result = await collection.BulkWriteAsync(dbContext.SessionHandle, replaceRequests, cancellationToken: cancellationToken);
+                result = await collection.BulkWriteAsync(_dbContext.SessionHandle, replaceRequests, cancellationToken: cancellationToken);
             }
             else
             {
@@ -621,8 +616,8 @@ namespace JustCSharp.MongoDB.Repositories
             var isHardDelete = IsHardDeleted(entity);
             PreDelete(entity);
             
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
 
             var oldConcurrencyStamp = SetConcurrencyStamp(entity);
 
@@ -632,10 +627,10 @@ namespace JustCSharp.MongoDB.Repositories
 
                 ReplaceOneResult result;
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
                     result = collection.ReplaceOne(
-                        dbContext.SessionHandle,
+                        _dbContext.SessionHandle,
                         CreateEntityFilter(entity, true, oldConcurrencyStamp),
                         entity
                     );
@@ -657,10 +652,10 @@ namespace JustCSharp.MongoDB.Repositories
             {
                 DeleteResult result;
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
                     result = collection.DeleteOne(
-                        dbContext.SessionHandle,
+                        _dbContext.SessionHandle,
                         CreateEntityFilter(entity, true, oldConcurrencyStamp)
                     );
                 }
@@ -683,8 +678,8 @@ namespace JustCSharp.MongoDB.Repositories
             var isHardDelete = IsHardDeleted(entity);
             await PreDeleteAsync(entity, cancellationToken);
             
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
 
             var oldConcurrencyStamp = SetConcurrencyStamp(entity);
 
@@ -694,10 +689,10 @@ namespace JustCSharp.MongoDB.Repositories
 
                 ReplaceOneResult result;
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
                     result = await collection.ReplaceOneAsync(
-                        dbContext.SessionHandle,
+                        _dbContext.SessionHandle,
                         CreateEntityFilter(entity, true, oldConcurrencyStamp),
                         entity,
                         cancellationToken: cancellationToken
@@ -721,10 +716,10 @@ namespace JustCSharp.MongoDB.Repositories
             {
                 DeleteResult result;
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
                     result = await collection.DeleteOneAsync(
-                        dbContext.SessionHandle,
+                        _dbContext.SessionHandle,
                         CreateEntityFilter(entity, true, oldConcurrencyStamp),
                         cancellationToken: cancellationToken
                     );
@@ -766,8 +761,8 @@ namespace JustCSharp.MongoDB.Repositories
                 }
             }
 
-            var dbContext = GetDbContext();
-            var collection = dbContext.Collection<TEntity>();
+            _dbContext.CheckStateAndConnect();
+            var collection = _dbContext.Collection<TEntity>();
 
             if (softDeletedEntities.Count > 0)
             {
@@ -778,9 +773,9 @@ namespace JustCSharp.MongoDB.Repositories
                         CreateEntityFilter(entity.Key, true, entity.Value), entity.Key))
                 );
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
-                    updateResult = collection.BulkWrite(dbContext.SessionHandle, replaceRequests);
+                    updateResult = collection.BulkWrite(_dbContext.SessionHandle, replaceRequests);
                 }
                 else
                 {
@@ -798,10 +793,10 @@ namespace JustCSharp.MongoDB.Repositories
                 DeleteResult deleteResult;
                 var hardDeletedEntitiesCount = hardDeletedEntities.Count;
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
                     deleteResult = collection.DeleteMany(
-                        dbContext.SessionHandle,
+                        _dbContext.SessionHandle,
                         CreateEntitiesFilter(hardDeletedEntities));
                 }
                 else
@@ -839,8 +834,8 @@ namespace JustCSharp.MongoDB.Repositories
                 }
             }
 
-            var dbContext = await GetDbContextAsync(cancellationToken);
-            var collection = dbContext.Collection<TEntity>();
+            await _dbContext.CheckStateAndConnectAsync(cancellationToken);
+            var collection = _dbContext.Collection<TEntity>();
 
             if (softDeletedEntities.Count > 0)
             {
@@ -851,9 +846,9 @@ namespace JustCSharp.MongoDB.Repositories
                         CreateEntityFilter(entity.Key, true, entity.Value), entity.Key))
                 );
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
-                    updateResult = await collection.BulkWriteAsync(dbContext.SessionHandle, replaceRequests, cancellationToken: cancellationToken);
+                    updateResult = await collection.BulkWriteAsync(_dbContext.SessionHandle, replaceRequests, cancellationToken: cancellationToken);
                 }
                 else
                 {
@@ -871,10 +866,10 @@ namespace JustCSharp.MongoDB.Repositories
                 DeleteResult deleteResult;
                 var hardDeletedEntitiesCount = hardDeletedEntities.Count;
 
-                if (dbContext.SessionHandle != null)
+                if (_dbContext.SessionHandle != null)
                 {
                     deleteResult = await collection.DeleteManyAsync(
-                        dbContext.SessionHandle,
+                        _dbContext.SessionHandle,
                         CreateEntitiesFilter(hardDeletedEntities),
                         cancellationToken: cancellationToken);
                 }

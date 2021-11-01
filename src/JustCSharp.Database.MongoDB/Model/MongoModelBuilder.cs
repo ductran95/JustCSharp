@@ -4,7 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JustCSharp.Utility.Extensions;
 
-namespace JustCSharp.MongoDB.Model
+namespace JustCSharp.Database.MongoDB.Model
 {
     public class MongoModelBuilder
     {

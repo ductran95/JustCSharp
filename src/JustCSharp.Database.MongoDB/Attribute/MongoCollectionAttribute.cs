@@ -1,4 +1,4 @@
-namespace JustCSharp.MongoDB.Attribute
+namespace JustCSharp.Database.MongoDB.Attribute
 {
     public class MongoCollectionAttribute : System.Attribute
     {
