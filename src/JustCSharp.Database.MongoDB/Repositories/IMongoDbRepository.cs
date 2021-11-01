@@ -7,7 +7,8 @@ using MongoDB.Driver.Linq;
 
 namespace JustCSharp.Database.MongoDB.Repositories
 {
-    public interface IMongoDbRepository<TEntity>: IRepository<TEntity> where TEntity : IEntity
+    public interface IMongoDbRepository<TEntity>: IRepository<TEntity> 
+        where TEntity : class, IEntity
     {
         IMongoDatabase GetDatabase();
         Task<IMongoDatabase> GetDatabaseAsync(CancellationToken cancellationToken = default);

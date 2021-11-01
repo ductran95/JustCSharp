@@ -23,9 +23,10 @@ namespace JustCSharp.Database.MongoDB.Extensions
             
             return serviceCollection;
         }
-
+        
         public static IServiceCollection AddMongoDbRepository<TRepository, TEntity>(this IServiceCollection serviceCollection)
-            where TRepository : class, IMongoDbRepository<TEntity> where TEntity: IEntity
+            where TRepository : class, IMongoDbRepository<TEntity> 
+            where TEntity: class, IEntity
         {
             serviceCollection.TryAddScoped<IMongoDbRepository<TEntity>, TRepository>();
             serviceCollection.TryAddScoped<IRepository<TEntity>>(sp => sp.GetRequiredService<IMongoDbRepository<TEntity>>());

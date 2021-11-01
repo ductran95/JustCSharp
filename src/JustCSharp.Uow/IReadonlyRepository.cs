@@ -9,7 +9,8 @@ using JustCSharp.Data.Entities;
 
 namespace JustCSharp.Uow
 {
-    public interface IReadonlyRepository<TEntity> where TEntity : IEntity
+    public interface IReadonlyRepository<TEntity>
+        where TEntity: class, IEntity
     {
         IQueryable<TEntity> GetQueryable();
         Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default);

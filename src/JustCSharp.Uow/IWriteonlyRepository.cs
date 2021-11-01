@@ -8,7 +8,8 @@ using JustCSharp.Data.Entities;
 
 namespace JustCSharp.Uow
 {
-    public interface IWriteonlyRepository<TEntity> where TEntity: IEntity
+    public interface IWriteonlyRepository<TEntity>
+        where TEntity: class, IEntity
     {
         TEntity Insert([NotNull] TEntity entity, bool autoSave = false);
         Task<TEntity> InsertAsync([NotNull] TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);

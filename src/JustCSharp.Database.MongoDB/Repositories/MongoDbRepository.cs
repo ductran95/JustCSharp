@@ -14,7 +14,9 @@ using MongoDB.Driver.Linq;
 
 namespace JustCSharp.Database.MongoDB.Repositories
 {
-    public class MongoDbRepository<TDbContext, TEntity>: IMongoDbRepository<TEntity> where TDbContext: IMongoDbContext where TEntity : class, IEntity
+    public class MongoDbRepository<TDbContext, TEntity>: IMongoDbRepository<TEntity> 
+        where TDbContext: class, IMongoDbContext 
+        where TEntity : class, IEntity
     {
         protected readonly TDbContext _dbContext;
         protected readonly IAuthContextProvider _authContextProvider;
