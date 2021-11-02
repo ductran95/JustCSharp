@@ -30,11 +30,12 @@ namespace JustCSharp.Database.MongoDB.Context
         protected readonly ILazyServiceProvider _serviceProvider;
         protected readonly MongoDbContextOptions _dbContextOptions;
 
+        public MongoDbContextOptions DbContextOptions => _dbContextOptions;
+        
         public bool IsConnected { get; protected set; }
         public string DatabaseName { get; protected set; }
         public MongoUrl MongoUrl { get; protected set; }
         public Dictionary<Type, IMongoEntityModel> EntityModels { get; protected set; }
-        public MongoDbContextOptions DbContextOptions { get; protected set; }
         public IMongoClient Client { get; protected set; }
         public IMongoDatabase Database { get; protected set; }
         public IClientSessionHandle SessionHandle { get; protected set; }
