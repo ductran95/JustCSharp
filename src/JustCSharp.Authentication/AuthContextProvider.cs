@@ -15,7 +15,7 @@ namespace JustCSharp.Authentication
 
         protected IAuthContext _authContext;
         
-        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(AuthContextBase));
 
         public AuthContextProvider(ILazyServiceProvider serviceProvider)
         {
@@ -60,7 +60,7 @@ namespace JustCSharp.Authentication
         
         protected TAuthContext _authContext;
         
-        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(AuthContextProviderOfT<>));
 
         protected AuthContextProviderOfT(ILazyServiceProvider serviceProvider)
         {

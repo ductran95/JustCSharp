@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -38,7 +39,7 @@ namespace JustCSharp.Database.MongoDB.Context
         public IMongoDatabase Database { get; protected set; }
         public IClientSessionHandle SessionHandle { get; protected set; }
         
-        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(MongoDbContext));
         protected IUnitOfWork UnitOfWork => _serviceProvider.LazyGetService<IUnitOfWork>();
         protected IMongoEntityModelCache EntityModelCache => _serviceProvider.LazyGetService<IMongoEntityModelCache>();
         
@@ -74,6 +75,9 @@ namespace JustCSharp.Database.MongoDB.Context
             {
                 return;
             }
+            
+            Stopwatch stopwatch = null;
+            Logger.LogTrace($"Start CheckStateAndConnect");
 
             var client = new MongoClient(_dbContextOptions.Settings);
             var database = client.GetDatabase(DatabaseName);
@@ -88,7 +92,17 @@ namespace JustCSharp.Database.MongoDB.Context
 
                 if (session == null)
                 {
+                    if (Logger.IsEnabled(LogLevel.Trace))
+                    {
+                        stopwatch = Stopwatch.StartNew();
+                    }
+                    
+                    Logger.LogTrace($"Start StartSession");
+                    
                     session = Client.StartSession();
+                    
+                    stopwatch?.Stop();
+                    Logger.LogTrace("End StartSession, elapsed time {elapsedTime}", stopwatch?.Elapsed);
 
                     if (_dbContextOptions.Timeout.HasValue)
                     {
@@ -115,6 +129,9 @@ namespace JustCSharp.Database.MongoDB.Context
             UnitOfWork?.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
 
             IsConnected = true;
+            
+            stopwatch?.Stop();
+            Logger.LogTrace("End CheckStateAndConnect");
         }
 
         public async Task CheckStateAndConnectAsync(CancellationToken cancellationToken = default)
@@ -123,6 +140,9 @@ namespace JustCSharp.Database.MongoDB.Context
             {
                 return;
             }
+            
+            Stopwatch stopwatch = null;
+            Logger.LogTrace($"Start CheckStateAndConnectAsync");
 
             var client = new MongoClient(_dbContextOptions.Settings);
             var database = client.GetDatabase(DatabaseName);
@@ -137,7 +157,17 @@ namespace JustCSharp.Database.MongoDB.Context
 
                 if (session == null)
                 {
+                    if (Logger.IsEnabled(LogLevel.Trace))
+                    {
+                        stopwatch = Stopwatch.StartNew();
+                    }
+                    
+                    Logger.LogTrace($"Start StartSessionAsync");
+                    
                     session = await Client.StartSessionAsync(cancellationToken: cancellationToken);
+                    
+                    stopwatch?.Stop();
+                    Logger.LogTrace("End StartSessionAsync, elapsed time {elapsedTime}", stopwatch?.Elapsed);
 
                     if (_dbContextOptions.Timeout.HasValue)
                     {
@@ -153,7 +183,7 @@ namespace JustCSharp.Database.MongoDB.Context
             var modelCache = EntityModelCache.DbModelCache.GetOrDefault(this.GetType());
             if (modelCache == null)
             {
-                InitializeDatabase(database, client, session);
+                await InitializeDatabaseAsync(database, client, session, cancellationToken);
                 EntityModelCache.DbModelCache.TryAdd(this.GetType(), EntityModels);
             }
             else
@@ -164,10 +194,62 @@ namespace JustCSharp.Database.MongoDB.Context
             UnitOfWork?.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
 
             IsConnected = true;
+            
+            stopwatch?.Stop();
+            Logger.LogTrace("End CheckStateAndConnectAsync");
         }
 
         protected virtual void InitializeCollections()
         {
+            var entityModels = InitializeCollectionsInternal();
+
+            foreach (var entityModel in entityModels.Values)
+            {
+                var map = entityModel.BsonMap;
+                if (!BsonClassMap.IsClassMapRegistered(map.ClassType))
+                {
+                    BsonClassMap.RegisterClassMap(map);
+                }
+
+                if (!string.IsNullOrEmpty(entityModel.CollectionName))
+                {
+                    CreateCollectionIfNotExists(entityModel.CollectionName);
+                }
+            }
+
+            EntityModels = entityModels;
+        }
+        
+        protected virtual async Task InitializeCollectionsAsync(CancellationToken cancellationToken = default)
+        {
+            var entityModels = InitializeCollectionsInternal();
+
+            foreach (var entityModel in entityModels.Values)
+            {
+                var map = entityModel.BsonMap;
+                if (!BsonClassMap.IsClassMapRegistered(map.ClassType))
+                {
+                    BsonClassMap.RegisterClassMap(map);
+                }
+
+                if (!string.IsNullOrEmpty(entityModel.CollectionName))
+                {
+                    await CreateCollectionIfNotExistsAsync(entityModel.CollectionName, cancellationToken);
+                }
+            }
+
+            EntityModels = entityModels;
+        }
+
+        private Dictionary<Type, IMongoEntityModel> InitializeCollectionsInternal()
+        {
+            Stopwatch stopwatch = null;
+            if (Logger.IsEnabled(LogLevel.Trace))
+            {
+                stopwatch = Stopwatch.StartNew();
+            }
+            Logger.LogTrace($"Start InitializeCollectionsInternal");
+            
             var modelBuilder = new MongoModelBuilder();
 
             // Invoke MongoCollectionAttribute
@@ -195,21 +277,10 @@ namespace JustCSharp.Database.MongoDB.Context
             var entityModels = modelBuilder.GetEntities()
                 .ToDictionary(x => x.EntityType, x => x);
 
-            foreach (var entityModel in entityModels.Values)
-            {
-                var map = entityModel.BsonMap;
-                if (!BsonClassMap.IsClassMapRegistered(map.ClassType))
-                {
-                    BsonClassMap.RegisterClassMap(map);
-                }
-
-                if (!string.IsNullOrEmpty(entityModel.CollectionName))
-                {
-                    CreateCollectionIfNotExists(entityModel.CollectionName);
-                }
-            }
-
-            EntityModels = entityModels;
+            stopwatch?.Stop();
+            Logger.LogTrace("End InitializeCollectionsAsync, elapsed time {time}", stopwatch?.Elapsed);
+            
+            return entityModels;
         }
 
         protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
@@ -217,6 +288,13 @@ namespace JustCSharp.Database.MongoDB.Context
         {
             InitializeDatabase(database, client, sessionHandle, EntityModels);
             InitializeCollections();
+        }
+        
+        protected virtual async Task InitializeDatabaseAsync(IMongoDatabase database, IMongoClient client,
+            IClientSessionHandle sessionHandle, CancellationToken cancellationToken = default)
+        {
+            InitializeDatabase(database, client, sessionHandle, EntityModels);
+            await InitializeCollectionsAsync(cancellationToken);
         }
 
         protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
@@ -234,13 +312,74 @@ namespace JustCSharp.Database.MongoDB.Context
 
         protected virtual void CreateCollectionIfNotExists(string collectionName)
         {
+            Stopwatch stopwatch = null;
+            TimeSpan elapsedTime = TimeSpan.Zero;
+            if (Logger.IsEnabled(LogLevel.Trace))
+            {
+                stopwatch = Stopwatch.StartNew();
+            }
+            Logger.LogTrace("Start CreateCollectionIfNotExists with collection name {collectionName}", collectionName);
+            
             var filter = new BsonDocument("name", collectionName);
             var options = new ListCollectionNamesOptions { Filter = filter };
 
             if (!Database.ListCollectionNames(options).Any())
             {
+                stopwatch?.Stop();
+                if (Logger.IsEnabled(LogLevel.Trace))
+                {
+                    elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
+                }
+                stopwatch?.Restart();
+                
                 Database.CreateCollection(collectionName);
+                
+                Logger.LogTrace("CreateCollection takes {time}", stopwatch?.Elapsed);
             }
+            
+            stopwatch?.Stop();
+            if (Logger.IsEnabled(LogLevel.Trace))
+            {
+                elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
+            }
+            Logger.LogTrace("End CreateCollectionIfNotExists, elapsed time {time}", elapsedTime);
+        }
+        
+        protected virtual async Task CreateCollectionIfNotExistsAsync(string collectionName, CancellationToken cancellationToken = default)
+        {
+            Stopwatch stopwatch = null;
+            TimeSpan elapsedTime = TimeSpan.Zero;
+            if (Logger.IsEnabled(LogLevel.Trace))
+            {
+                stopwatch = Stopwatch.StartNew();
+            }
+            Logger.LogTrace("Start CreateCollectionIfNotExistsAsync with collection name {collectionName}", collectionName);
+            
+            var filter = new BsonDocument("name", collectionName);
+            var options = new ListCollectionNamesOptions { Filter = filter };
+
+            var result = await Database.ListCollectionNamesAsync(options, cancellationToken);
+
+            if (!await result.AnyAsync(cancellationToken: cancellationToken))
+            {
+                stopwatch?.Stop();
+                if (Logger.IsEnabled(LogLevel.Trace))
+                {
+                    elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
+                }
+                stopwatch?.Restart();
+                
+                await Database.CreateCollectionAsync(collectionName, cancellationToken: cancellationToken);
+                
+                Logger.LogTrace("CreateCollectionAsync takes {time}", stopwatch?.Elapsed);
+            }
+            
+            stopwatch?.Stop();
+            if (Logger.IsEnabled(LogLevel.Trace))
+            {
+                elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
+            }
+            Logger.LogTrace("End CreateCollectionIfNotExistsAsync, elapsed time {time}", elapsedTime);
         }
 
         protected virtual string GetCollectionName<T>()
@@ -261,7 +400,7 @@ namespace JustCSharp.Database.MongoDB.Context
             return model;
         }
 
-        protected void ResolveConfig()
+        private void ResolveConfig()
         {
             MongoUrl = new MongoUrl(_dbContextOptions.ConnectionString);
             DatabaseName = MongoUrl.DatabaseName;

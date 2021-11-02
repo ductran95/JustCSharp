@@ -1,11 +1,8 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Core.DependencyInjection;
 using JustCSharp.Core.Logging.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JustCSharp.Uow.UnitOfWork
 {
@@ -15,7 +12,7 @@ namespace JustCSharp.Uow.UnitOfWork
 
         protected IUnitOfWork _unitOfWork;
         
-        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProvider));
 
         public UnitOfWorkProvider(ILazyServiceProvider serviceProvider)
         {
@@ -62,7 +59,7 @@ namespace JustCSharp.Uow.UnitOfWork
 
         protected TUnitOfWork _unitOfWork;
         
-        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProviderOfT<>));
 
         protected UnitOfWorkProviderOfT(ILazyServiceProvider serviceProvider)
         {

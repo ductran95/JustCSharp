@@ -19,7 +19,7 @@ namespace JustCSharp.Uow.UnitOfWork
         protected readonly Dictionary<Type, IDatabase> _databases;
         protected readonly Dictionary<Type, ITransaction> _transactions;
 
-        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkBase));
         
         public UnitOfWorkBase(ILazyServiceProvider serviceProvider)
         {
