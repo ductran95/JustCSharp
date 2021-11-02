@@ -4,19 +4,28 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using JustCSharp.Core.DependencyInjection;
+using JustCSharp.Core.Logging.Extensions;
 using JustCSharp.Utility.Extensions;
+using Microsoft.Extensions.Logging;
+
 // ReSharper disable SuspiciousTypeConversion.Global
 
 namespace JustCSharp.Uow.UnitOfWork
 {
     public class UnitOfWorkBase: IUnitOfWork
     {
+        protected readonly ILazyServiceProvider _serviceProvider;
         protected readonly Dictionary<Type, IDatabase> _databases;
         protected readonly Dictionary<Type, ITransaction> _transactions;
 
-        public UnitOfWorkBase()
+        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        
+        public UnitOfWorkBase(ILazyServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _databases = new Dictionary<Type, IDatabase>();
+            _transactions = new Dictionary<Type, ITransaction>();
         }
 
         public virtual bool IsTransactional { get; private set; }

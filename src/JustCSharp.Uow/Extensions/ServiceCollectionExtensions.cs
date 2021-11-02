@@ -1,3 +1,4 @@
+using JustCSharp.Core.Extensions;
 using JustCSharp.Uow.UnitOfWork;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -38,6 +39,8 @@ namespace JustCSharp.Uow.Extensions
         
         public static IServiceCollection AddUowCore(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddJustCSharpCore();
+            
             serviceCollection.TryAddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IUnitOfWorkProvider>().UnitOfWork);
             
             return serviceCollection;

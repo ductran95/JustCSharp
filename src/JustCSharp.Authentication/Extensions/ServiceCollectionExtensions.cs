@@ -1,3 +1,4 @@
+using JustCSharp.Core.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -37,6 +38,8 @@ namespace JustCSharp.Authentication.Extensions
         
         public static IServiceCollection AddAuthContextCore(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddJustCSharpCore();
+            
             serviceCollection.TryAddScoped<IAuthContext>(sp => sp.GetRequiredService<IAuthContextProvider>().AuthContext);
             
             return serviceCollection;

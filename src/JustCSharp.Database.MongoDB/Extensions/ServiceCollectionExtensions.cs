@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using JustCSharp.Core.Extensions;
 using JustCSharp.Data.Entities;
 using JustCSharp.Database.MongoDB.Context;
 using JustCSharp.Database.MongoDB.Model;
@@ -35,6 +36,8 @@ namespace JustCSharp.Database.MongoDB.Extensions
 
         public static IServiceCollection AddMongoDbCore(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddJustCSharpCore();
+            
             serviceCollection.TryAddSingleton<IMongoEntityModelCache, MongoEntityModelCache>();
             
             return serviceCollection;

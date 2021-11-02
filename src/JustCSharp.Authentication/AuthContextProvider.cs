@@ -1,11 +1,26 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JustCSharp.Core.DependencyInjection;
+using JustCSharp.Core.Logging.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JustCSharp.Authentication
 {
     public class AuthContextProvider: IAuthContextProvider
     {
+        protected readonly ILazyServiceProvider _serviceProvider;
+
         protected IAuthContext _authContext;
+        
+        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+
+        public AuthContextProvider(ILazyServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         public IAuthContext AuthContext => GetAuthContext();
         
@@ -41,7 +56,16 @@ namespace JustCSharp.Authentication
     public abstract class AuthContextProviderOfT<TAuthContext>: IAuthContextProviderOfT<TAuthContext> 
         where TAuthContext: class, IAuthContext
     {
+        protected readonly ILazyServiceProvider _serviceProvider;
+        
         protected TAuthContext _authContext;
+        
+        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+
+        protected AuthContextProviderOfT(ILazyServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         public IAuthContext AuthContext => GetAuthContext();
         public TAuthContext AuthContextOfT => GetAuthContextOfT();

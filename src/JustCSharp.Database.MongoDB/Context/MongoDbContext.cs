@@ -4,16 +4,19 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using JustCSharp.Core.DependencyInjection;
+using JustCSharp.Core.Logging.Extensions;
 using JustCSharp.Data.Entities;
 using JustCSharp.Database.MongoDB.Attribute;
 using JustCSharp.Database.MongoDB.Model;
 using JustCSharp.Uow.UnitOfWork;
 using JustCSharp.Utility.Extensions;
 using JustCSharp.Utility.Helpers;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
-
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable MemberCanBeProtected.Global
 
@@ -23,41 +26,33 @@ namespace JustCSharp.Database.MongoDB.Context
     {
         #region Properties
 
+        protected readonly ILazyServiceProvider _serviceProvider;
         protected readonly MongoDbContextOptions _dbContextOptions;
-        protected readonly IUnitOfWork _unitOfWork;
-        protected readonly IMongoEntityModelCache _mongoEntityModelCache;
 
-        protected bool _isConnected;
-        protected string _databaseName;
-        protected MongoUrl _mongoUrl;
-        protected Dictionary<Type, IMongoEntityModel> _entityModels;
-        protected IMongoClient _client;
-        protected IMongoDatabase _database;
-        protected IClientSessionHandle _sessionHandle;
-
-        public MongoDbContextOptions DbContextOptions => _dbContextOptions;
-        public bool IsConnected => _isConnected;
-        public string DatabaseName => _databaseName;
-        public MongoUrl MongoUrl => _mongoUrl;
-        public Dictionary<Type, IMongoEntityModel> EntityModels => _entityModels;
-        public IMongoClient Client => _client;
-
-        public IMongoDatabase Database => _database;
-
-        public IClientSessionHandle SessionHandle => _sessionHandle;
-
+        public bool IsConnected { get; protected set; }
+        public string DatabaseName { get; protected set; }
+        public MongoUrl MongoUrl { get; protected set; }
+        public Dictionary<Type, IMongoEntityModel> EntityModels { get; protected set; }
+        public MongoDbContextOptions DbContextOptions { get; protected set; }
+        public IMongoClient Client { get; protected set; }
+        public IMongoDatabase Database { get; protected set; }
+        public IClientSessionHandle SessionHandle { get; protected set; }
+        
+        protected ILogger Logger => _serviceProvider.GetLogger(GetType());
+        protected IUnitOfWork UnitOfWork => _serviceProvider.LazyGetService<IUnitOfWork>();
+        protected IMongoEntityModelCache EntityModelCache => _serviceProvider.LazyGetService<IMongoEntityModelCache>();
+        
         #endregion
 
         #region Constructors
 
-        public MongoDbContext(MongoDbContextOptions dbContextOptions, IUnitOfWork unitOfWork,
-            IMongoEntityModelCache mongoEntityModelCache)
+        public MongoDbContext(ILazyServiceProvider serviceProvider, MongoDbContextOptions dbContextOptions)
         {
+            _serviceProvider = serviceProvider;
             _dbContextOptions = dbContextOptions;
-            _unitOfWork = unitOfWork;
-            _mongoEntityModelCache = mongoEntityModelCache;
 
             ResolveConfig();
+            
             if (!_dbContextOptions.LazyConnect)
             {
                 CheckStateAndConnect();
@@ -75,18 +70,20 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public void CheckStateAndConnect()
         {
-            if (_isConnected)
+            if (IsConnected)
             {
                 return;
             }
 
             var client = new MongoClient(_dbContextOptions.Settings);
-            var database = client.GetDatabase(_databaseName);
+            var database = client.GetDatabase(DatabaseName);
             IClientSessionHandle session = null;
 
-            if (_unitOfWork.IsTransactional)
+            var isTransactional = UnitOfWork?.IsTransactional ?? false;
+
+            if (isTransactional)
             {
-                var activeTransaction = _unitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
+                var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
                 session = activeTransaction?.SessionHandle;
 
                 if (session == null)
@@ -100,41 +97,42 @@ namespace JustCSharp.Database.MongoDB.Context
 
                     session.StartTransaction();
 
-                    _unitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+                    UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
                 }
             }
 
-            var modelCache = _mongoEntityModelCache.DbModelCache.GetOrDefault(this.GetType());
+            var modelCache = EntityModelCache.DbModelCache.GetOrDefault(this.GetType());
             if (modelCache == null)
             {
                 InitializeDatabase(database, client, session);
-                _mongoEntityModelCache.DbModelCache.TryAdd(this.GetType(), EntityModels);
+                EntityModelCache.DbModelCache.TryAdd(this.GetType(), EntityModels);
             }
             else
             {
                 InitializeDatabase(database, client, session, modelCache);
             }
 
-            _unitOfWork.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
+            UnitOfWork?.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
 
-            _isConnected = true;
+            IsConnected = true;
         }
 
         public async Task CheckStateAndConnectAsync(CancellationToken cancellationToken = default)
         {
-            if (_isConnected)
+            if (IsConnected)
             {
                 return;
             }
 
-
             var client = new MongoClient(_dbContextOptions.Settings);
-            var database = client.GetDatabase(_databaseName);
+            var database = client.GetDatabase(DatabaseName);
             IClientSessionHandle session = null;
 
-            if (_unitOfWork.IsTransactional)
+            var isTransactional = UnitOfWork?.IsTransactional ?? false;
+
+            if (isTransactional)
             {
-                var activeTransaction = _unitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
+                var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
                 session = activeTransaction?.SessionHandle;
 
                 if (session == null)
@@ -148,24 +146,24 @@ namespace JustCSharp.Database.MongoDB.Context
 
                     session.StartTransaction();
 
-                    _unitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+                    UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
                 }
             }
 
-            var modelCache = _mongoEntityModelCache.DbModelCache.GetOrDefault(this.GetType());
+            var modelCache = EntityModelCache.DbModelCache.GetOrDefault(this.GetType());
             if (modelCache == null)
             {
                 InitializeDatabase(database, client, session);
-                _mongoEntityModelCache.DbModelCache.TryAdd(this.GetType(), EntityModels);
+                EntityModelCache.DbModelCache.TryAdd(this.GetType(), EntityModels);
             }
             else
             {
                 InitializeDatabase(database, client, session, modelCache);
             }
 
-            _unitOfWork.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
+            UnitOfWork?.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
 
-            _isConnected = true;
+            IsConnected = true;
         }
 
         protected virtual void InitializeCollections()
@@ -211,7 +209,7 @@ namespace JustCSharp.Database.MongoDB.Context
                 }
             }
 
-            _entityModels = entityModels;
+            EntityModels = entityModels;
         }
 
         protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
@@ -224,10 +222,10 @@ namespace JustCSharp.Database.MongoDB.Context
         protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
             IClientSessionHandle sessionHandle, Dictionary<Type, IMongoEntityModel> entityModels)
         {
-            _database = database;
-            _client = client;
-            _sessionHandle = sessionHandle;
-            _entityModels = entityModels;
+            Database = database;
+            Client = client;
+            SessionHandle = sessionHandle;
+            EntityModels = entityModels;
         }
 
         protected virtual void CreateModel(MongoModelBuilder modelBuilder)
@@ -265,11 +263,11 @@ namespace JustCSharp.Database.MongoDB.Context
 
         protected void ResolveConfig()
         {
-            _mongoUrl = new MongoUrl(_dbContextOptions.ConnectionString);
-            _databaseName = _mongoUrl.DatabaseName;
-            if (string.IsNullOrWhiteSpace(_databaseName))
+            MongoUrl = new MongoUrl(_dbContextOptions.ConnectionString);
+            DatabaseName = MongoUrl.DatabaseName;
+            if (string.IsNullOrWhiteSpace(DatabaseName))
             {
-                _databaseName = _dbContextOptions.ConnectionStringName;
+                DatabaseName = _dbContextOptions.ConnectionStringName;
             }
         }
 
