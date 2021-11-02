@@ -10,10 +10,14 @@ namespace JustCSharp.Database.MongoDB.Context
     public interface IMongoDbContext
     {
         Dictionary<Type, IMongoEntityModel> EntityModels { get; }
+        MongoDbContextOptions DbContextOptions { get; }
         IMongoClient Client { get; }
         IMongoDatabase Database { get; }
         IClientSessionHandle SessionHandle { get; }
-        
+        bool IsConnected { get; }
+        string DatabaseName { get; }
+        MongoUrl MongoUrl { get; }
+
         IMongoCollection<T> Collection<T>();
         void CheckStateAndConnect();
         Task CheckStateAndConnectAsync(CancellationToken cancellationToken = default);

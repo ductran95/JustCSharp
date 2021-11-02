@@ -14,33 +14,44 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberCanBeProtected.Global
+
 namespace JustCSharp.Database.MongoDB.Context
 {
-    public class MongoDbContext: IMongoDbContext
+    public class MongoDbContext : IMongoDbContext
     {
         #region Properties
 
         protected readonly MongoDbContextOptions _dbContextOptions;
         protected readonly IUnitOfWork _unitOfWork;
         protected readonly IMongoEntityModelCache _mongoEntityModelCache;
-        
+
         protected bool _isConnected;
-        protected MongoUrl _mongoUrl;
         protected string _databaseName;
+        protected MongoUrl _mongoUrl;
+        protected Dictionary<Type, IMongoEntityModel> _entityModels;
+        protected IMongoClient _client;
+        protected IMongoDatabase _database;
+        protected IClientSessionHandle _sessionHandle;
 
-        public Dictionary<Type, IMongoEntityModel> EntityModels { get; private set; }
-        
-        public IMongoClient Client { get; private set; }
+        public MongoDbContextOptions DbContextOptions => _dbContextOptions;
+        public bool IsConnected => _isConnected;
+        public string DatabaseName => _databaseName;
+        public MongoUrl MongoUrl => _mongoUrl;
+        public Dictionary<Type, IMongoEntityModel> EntityModels => _entityModels;
+        public IMongoClient Client => _client;
 
-        public IMongoDatabase Database { get; private set; }
+        public IMongoDatabase Database => _database;
 
-        public IClientSessionHandle SessionHandle { get; private set; }
+        public IClientSessionHandle SessionHandle => _sessionHandle;
 
         #endregion
 
         #region Constructors
 
-        public MongoDbContext(MongoDbContextOptions dbContextOptions, IUnitOfWork unitOfWork, IMongoEntityModelCache mongoEntityModelCache)
+        public MongoDbContext(MongoDbContextOptions dbContextOptions, IUnitOfWork unitOfWork,
+            IMongoEntityModelCache mongoEntityModelCache)
         {
             _dbContextOptions = dbContextOptions;
             _unitOfWork = unitOfWork;
@@ -56,19 +67,19 @@ namespace JustCSharp.Database.MongoDB.Context
         #endregion
 
         #region Functions
-        
+
         public virtual IMongoCollection<T> Collection<T>()
         {
             return Database.GetCollection<T>(GetCollectionName<T>());
         }
-        
+
         public void CheckStateAndConnect()
         {
             if (_isConnected)
             {
                 return;
             }
-            
+
             var client = new MongoClient(_dbContextOptions.Settings);
             var database = client.GetDatabase(_databaseName);
             IClientSessionHandle session = null;
@@ -92,7 +103,7 @@ namespace JustCSharp.Database.MongoDB.Context
                     _unitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
                 }
             }
-            
+
             var modelCache = _mongoEntityModelCache.DbModelCache.GetOrDefault(this.GetType());
             if (modelCache == null)
             {
@@ -105,17 +116,18 @@ namespace JustCSharp.Database.MongoDB.Context
             }
 
             _unitOfWork.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
-            
+
             _isConnected = true;
         }
-        
+
         public async Task CheckStateAndConnectAsync(CancellationToken cancellationToken = default)
         {
             if (_isConnected)
             {
                 return;
             }
-            
+
+
             var client = new MongoClient(_dbContextOptions.Settings);
             var database = client.GetDatabase(_databaseName);
             IClientSessionHandle session = null;
@@ -139,7 +151,7 @@ namespace JustCSharp.Database.MongoDB.Context
                     _unitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
                 }
             }
-            
+
             var modelCache = _mongoEntityModelCache.DbModelCache.GetOrDefault(this.GetType());
             if (modelCache == null)
             {
@@ -152,14 +164,14 @@ namespace JustCSharp.Database.MongoDB.Context
             }
 
             _unitOfWork.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
-            
+
             _isConnected = true;
         }
-        
+
         protected virtual void InitializeCollections()
         {
             var modelBuilder = new MongoModelBuilder();
-            
+
             // Invoke MongoCollectionAttribute
             var collectionProperties =
                 from property in this.GetType().GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -171,21 +183,20 @@ namespace JustCSharp.Database.MongoDB.Context
             foreach (var collectionProperty in collectionProperties)
             {
                 var entityType = collectionProperty.PropertyType.GenericTypeArguments[0];
-                var collectionAttribute = collectionProperty.GetCustomAttributes().OfType<MongoCollectionAttribute>().FirstOrDefault();
+                var collectionAttribute = collectionProperty.GetCustomAttributes().OfType<MongoCollectionAttribute>()
+                    .FirstOrDefault();
 
-                modelBuilder.Entity(entityType, b =>
-                {
-                    b.CollectionName = collectionAttribute?.CollectionName ?? collectionProperty.Name;
-                });
+                modelBuilder.Entity(entityType,
+                    b => { b.CollectionName = collectionAttribute?.CollectionName ?? collectionProperty.Name; });
             }
-            
+
             // Invoke CreateModel
             CreateModel(modelBuilder);
-            
+
             // Build Model
             var entityModels = modelBuilder.GetEntities()
-                .ToDictionary(x=>x.EntityType, x=>x);
-            
+                .ToDictionary(x => x.EntityType, x => x);
+
             foreach (var entityModel in entityModels.Values)
             {
                 var map = entityModel.BsonMap;
@@ -194,31 +205,35 @@ namespace JustCSharp.Database.MongoDB.Context
                     BsonClassMap.RegisterClassMap(map);
                 }
 
-                CreateCollectionIfNotExists(entityModel.CollectionName);
+                if (!string.IsNullOrEmpty(entityModel.CollectionName))
+                {
+                    CreateCollectionIfNotExists(entityModel.CollectionName);
+                }
             }
 
-            EntityModels = entityModels;
+            _entityModels = entityModels;
         }
-        
-        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle)
+
+        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
+            IClientSessionHandle sessionHandle)
         {
             InitializeDatabase(database, client, sessionHandle, EntityModels);
             InitializeCollections();
         }
-        
-        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client, IClientSessionHandle sessionHandle, Dictionary<Type, IMongoEntityModel> entityModels)
+
+        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
+            IClientSessionHandle sessionHandle, Dictionary<Type, IMongoEntityModel> entityModels)
         {
-            Database = database;
-            Client = client;
-            SessionHandle = sessionHandle;
-            EntityModels = entityModels;
+            _database = database;
+            _client = client;
+            _sessionHandle = sessionHandle;
+            _entityModels = entityModels;
         }
 
         protected virtual void CreateModel(MongoModelBuilder modelBuilder)
         {
-            
         }
-        
+
         protected virtual void CreateCollectionIfNotExists(string collectionName)
         {
             var filter = new BsonDocument("name", collectionName);
@@ -241,7 +256,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
             if (model == null)
             {
-                throw new MongoDbException("Could not find a model for given entity type: " + typeof(TEntity).AssemblyQualifiedName);
+                throw new MongoDbException("Could not find a model for given entity type: " +
+                                           typeof(TEntity).AssemblyQualifiedName);
             }
 
             return model;

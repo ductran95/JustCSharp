@@ -2,7 +2,7 @@ using System;
 
 namespace JustCSharp.Data.Entities
 {
-    public abstract class EntityBase<TKey>: IEntity, ISoftDelete, IAuditable
+    public abstract class EntityBase<TKey>: IEntity<TKey>, ISoftDelete, IAuditable
     {
         public TKey Id { get; set; }
         public bool IsDeleted { get; set; }
