@@ -1,14 +1,14 @@
 # JustCSharp
 [![CI](https://github.com/ductran95/JustCSharp/actions/workflows/ci.yml/badge.svg)](https://github.com/ductran95/JustCSharp/actions/workflows/ci.yml)
 
+- JustCSharp.Core: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.Core)
+![Nuget](https://img.shields.io/nuget/dt/JustCSharp.Core)
+
 - JustCSharp.Authentication: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.Authentication)
 ![Nuget](https://img.shields.io/nuget/dt/JustCSharp.Authentication)
 
 - JustCSharp.Data: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.Data)
 ![Nuget](https://img.shields.io/nuget/dt/JustCSharp.Data)
-
-- JustCSharp.Module: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.Module)
-![Nuget](https://img.shields.io/nuget/dt/JustCSharp.Module)
 
 - JustCSharp.Uow: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.Uow)
 ![Nuget](https://img.shields.io/nuget/dt/JustCSharp.Uow)
