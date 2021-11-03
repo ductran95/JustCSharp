@@ -6,10 +6,10 @@ namespace JustCSharp.Authentication.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddAuthContext<TAuthContext, TAuthContextProvider>(this IServiceCollection serviceCollection) 
+        public static IServiceCollection AddJustCSharpAuthContext<TAuthContext, TAuthContextProvider>(this IServiceCollection serviceCollection) 
             where TAuthContext: class, IAuthContext where TAuthContextProvider: class, IAuthContextProviderOfT<TAuthContext>
         {
-            AddAuthContext<TAuthContextProvider>(serviceCollection);
+            AddJustCSharpAuthContext<TAuthContextProvider>(serviceCollection);
             
             serviceCollection.TryAddScoped<IAuthContextProviderOfT<TAuthContext>, TAuthContextProvider>();
             serviceCollection.TryAddScoped<TAuthContext>(sp => sp.GetRequiredService<IAuthContextProviderOfT<TAuthContext>>().AuthContextOfT);
@@ -17,26 +17,26 @@ namespace JustCSharp.Authentication.Extensions
             return serviceCollection;
         }
         
-        public static IServiceCollection AddAuthContext<TAuthContextProvider>(this IServiceCollection serviceCollection) 
+        public static IServiceCollection AddJustCSharpAuthContext<TAuthContextProvider>(this IServiceCollection serviceCollection) 
             where TAuthContextProvider: class, IAuthContextProvider
         {
-            AddAuthContextCore(serviceCollection);
+            AddJustCSharpAuthContextCore(serviceCollection);
             
             serviceCollection.TryAddScoped<IAuthContextProvider, TAuthContextProvider>();
             
             return serviceCollection;
         }
         
-        public static IServiceCollection AddAuthContext(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddJustCSharpAuthContext(this IServiceCollection serviceCollection)
         {
-            AddAuthContextCore(serviceCollection);
+            AddJustCSharpAuthContextCore(serviceCollection);
             
             serviceCollection.TryAddScoped<IAuthContextProvider, AuthContextProvider>();
             
             return serviceCollection;
         }
         
-        public static IServiceCollection AddAuthContextCore(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddJustCSharpAuthContextCore(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddJustCSharpCore();
             

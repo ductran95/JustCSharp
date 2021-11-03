@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net5.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="10.3.4" />
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\JustCSharp.Core\JustCSharp.Core.csproj" />
+      <ProjectReference Include="..\JustCSharp.Data\JustCSharp.Data.csproj" />
+      <ProjectReference Include="..\JustCSharp.Utility\JustCSharp.Utility.csproj" />
+    </ItemGroup>
+
+</Project>

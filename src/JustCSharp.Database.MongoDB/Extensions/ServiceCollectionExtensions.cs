@@ -13,11 +13,11 @@ namespace JustCSharp.Database.MongoDB.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddMongoDbContext<TDbContext>(
+        public static IServiceCollection AddJustCSharpMongoDbContext<TDbContext>(
             this IServiceCollection serviceCollection, 
             [CanBeNull] Action<MongoDbContextOptionsBuilder<TDbContext>> optionsAction) where TDbContext: MongoDbContext
         {
-            serviceCollection.AddMongoDbCore();
+            serviceCollection.AddJustCSharpMongoDbCore();
             serviceCollection.TryAddScoped<TDbContext>();
             
             serviceCollection.AddSingleton<MongoDbContextOptions<TDbContext>>(sp => CreateDbContextOptions(sp, optionsAction));
@@ -25,7 +25,7 @@ namespace JustCSharp.Database.MongoDB.Extensions
             return serviceCollection;
         }
         
-        public static IServiceCollection AddMongoDbRepository<TRepository, TEntity>(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddJustCSharpMongoDbRepository<TRepository, TEntity>(this IServiceCollection serviceCollection)
             where TRepository : class, IMongoDbRepository<TEntity> 
             where TEntity: class, IEntity
         {
@@ -34,7 +34,7 @@ namespace JustCSharp.Database.MongoDB.Extensions
             return serviceCollection;
         }
 
-        public static IServiceCollection AddMongoDbCore(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddJustCSharpMongoDbCore(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddJustCSharpCore();
             

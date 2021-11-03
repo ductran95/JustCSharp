@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Utility", "src\J
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Core", "src\JustCSharp.Core\JustCSharp.Core.csproj", "{61B33E37-0B04-4E30-B02F-0120B769F1FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.AutoMapper", "src\JustCSharp.AutoMapper\JustCSharp.AutoMapper.csproj", "{D3538F9E-E3FE-48D3-9C69-751069FF5ADA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.FluentValidation", "src\JustCSharp.FluentValidation\JustCSharp.FluentValidation.csproj", "{B0DA6391-A8F8-49CF-ADB7-171844B5F7B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +46,13 @@ Global
 		{61B33E37-0B04-4E30-B02F-0120B769F1FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61B33E37-0B04-4E30-B02F-0120B769F1FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61B33E37-0B04-4E30-B02F-0120B769F1FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3538F9E-E3FE-48D3-9C69-751069FF5ADA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3538F9E-E3FE-48D3-9C69-751069FF5ADA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3538F9E-E3FE-48D3-9C69-751069FF5ADA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3538F9E-E3FE-48D3-9C69-751069FF5ADA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0DA6391-A8F8-49CF-ADB7-171844B5F7B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0DA6391-A8F8-49CF-ADB7-171844B5F7B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0DA6391-A8F8-49CF-ADB7-171844B5F7B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0DA6391-A8F8-49CF-ADB7-171844B5F7B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

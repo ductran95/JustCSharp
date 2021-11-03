@@ -18,13 +18,13 @@ namespace JustCSharp.Database.MongoDB.Repositories
         where TDbContext: class, IMongoDbContext 
         where TEntity : class, IEntity
     {
-        protected readonly TDbContext _dbContext;
         protected readonly IAuthContextProvider _authContextProvider;
+        protected readonly TDbContext _dbContext;
 
-        public MongoDbRepository(TDbContext dbContext, IAuthContextProvider authContextProvider)
+        public MongoDbRepository(IAuthContextProvider authContextProvider, TDbContext dbContext)
         {
-            _dbContext = dbContext;
             _authContextProvider = authContextProvider;
+            _dbContext = dbContext;
         }
 
         #region Data
@@ -835,7 +835,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
         where TDbContext : class, IMongoDbContext
         where TEntity : class, IEntity<TKey>
     {
-        public MongoDbRepository(TDbContext dbContext, IAuthContextProvider authContextProvider) : base(dbContext, authContextProvider)
+        public MongoDbRepository(IAuthContextProvider authContextProvider, TDbContext dbContext) : base(authContextProvider, dbContext)
         {
         }
 
