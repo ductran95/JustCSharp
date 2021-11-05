@@ -18,3 +18,9 @@
 
 - JustCSharp.Utility: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.Utility)
 ![Nuget](https://img.shields.io/nuget/dt/JustCSharp.Utility)
+
+- JustCSharp.AutoMapper: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.AutoMapper)
+![Nuget](https://img.shields.io/nuget/dt/JustCSharp.AutoMapper)
+
+- JustCSharp.FluentValidation: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.FluentValidation)
+![Nuget](https://img.shields.io/nuget/dt/JustCSharp.FluentValidation)
