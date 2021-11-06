@@ -124,32 +124,28 @@ namespace JustCSharp.Database.MongoDB.Repositories
         public TEntity Find(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
         {
             var query = GetMongoQueryable();
-            return query
-                .Where(predicate)
-                .SingleOrDefault();
+            return IAsyncCursorSourceExtensions.SingleOrDefault<TEntity>(query
+                    .Where(predicate));
         }
 
         public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
         {
             var query = await GetMongoQueryableAsync(cancellationToken);
-            return await query
-                .Where(predicate)
+            return await MongoQueryable.Where(query, predicate)
                 .SingleOrDefaultAsync(cancellationToken);
         }
 
         public List<TEntity> GetList(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
         {
             var query = GetMongoQueryable();
-            return query
-                .Where(predicate)
-                .ToList();
+            return IAsyncCursorSourceExtensions.ToList<TEntity>(query
+                    .Where(predicate));
         }
 
         public async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
         {
             var query = await GetMongoQueryableAsync(cancellationToken);
-            return await query
-                .Where(predicate)
+            return await MongoQueryable.Where(query, predicate)
                 .ToListAsync(cancellationToken);
         }
         
@@ -157,12 +153,11 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         #region Action
         
-        protected virtual TQueryable ApplyDataFilters<TQueryable>(TQueryable query)
-            where TQueryable : IQueryable<TEntity>
+        protected virtual IMongoQueryable<TEntity> ApplyDataFilters(IMongoQueryable<TEntity> query)
         {
             if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
             {
-                query = (TQueryable)query.Where(e => ((ISoftDelete)e).IsDeleted == false);
+                query = query.Where(e => ((ISoftDelete)e).IsDeleted == false);
             }
 
             return query;
@@ -174,7 +169,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
             {
                 aggregate = aggregate.Match(e => ((ISoftDelete)e).IsDeleted == false);
             }
-
+        
             return aggregate;
         }
         
@@ -812,17 +807,15 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public void DeleteMany(Expression<Func<TEntity, bool>> predicate, bool autoSave = false)
         {
-            var entities = GetMongoQueryable()
-                .Where(predicate)
-                .ToList();
+            var entities = IAsyncCursorSourceExtensions.ToList<TEntity>(GetMongoQueryable()
+                    .Where(predicate));
 
             DeleteMany(entities, autoSave);
         }
 
         public async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
         {
-            var entities = await (await GetMongoQueryableAsync(cancellationToken))
-                .Where(predicate)
+            var entities = await MongoQueryable.Where((await GetMongoQueryableAsync(cancellationToken)), predicate)
                 .ToListAsync(cancellationToken);
 
             await DeleteManyAsync(entities, autoSave, cancellationToken);
