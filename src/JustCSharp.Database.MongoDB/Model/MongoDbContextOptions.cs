@@ -9,6 +9,7 @@ namespace JustCSharp.Database.MongoDB.Model
         public Type DbContextType { get; set; }
         public string ConnectionStringName { get; set; }
         public string ConnectionString { get; set; }
+        public string DatabaseName { get; set; }
         public int? Timeout { get; set; }
         public bool LazyConnect { get; set; } = true;
         public bool ConcurrentInit { get; set; } = true;

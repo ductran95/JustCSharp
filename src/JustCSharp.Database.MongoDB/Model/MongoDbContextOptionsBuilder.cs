@@ -47,6 +47,13 @@ namespace JustCSharp.Database.MongoDB.Model
             return this;
         }
         
+        public MongoDbContextOptionsBuilder<TDbContext> UseDatabaseName(string databaseName)
+        {
+            _options.DatabaseName = databaseName;
+
+            return this;
+        }
+        
         public MongoDbContextOptionsBuilder<TDbContext> UseTimeout(int timeout)
         {
             _options.Timeout = timeout;

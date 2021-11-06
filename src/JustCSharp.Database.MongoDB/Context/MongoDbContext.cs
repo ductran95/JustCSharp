@@ -57,6 +57,7 @@ namespace JustCSharp.Database.MongoDB.Context
             _dbContextOptions = dbContextOptions;
 
             ResolveConfig();
+            AddToUow();
 
             if (!_dbContextOptions.LazyConnect)
             {
@@ -371,7 +372,23 @@ namespace JustCSharp.Database.MongoDB.Context
             DatabaseName = MongoUrl.DatabaseName;
             if (string.IsNullOrWhiteSpace(DatabaseName))
             {
-                DatabaseName = _dbContextOptions.ConnectionStringName;
+                DatabaseName = !string.IsNullOrWhiteSpace(_dbContextOptions.DatabaseName) ? _dbContextOptions.DatabaseName : _dbContextOptions.ConnectionStringName;
+            }
+        }
+        
+        private void AddToUow()
+        {
+            if (UnitOfWork != null)
+            {
+                var existedDatabase = UnitOfWork.FindDatabase(GetType());
+                if (existedDatabase != null)
+                {
+                    Logger.LogWarning("Current Unit Of Work has already had this DbContext");
+                }
+                else
+                {
+                    UnitOfWork.GetOrAddDatabase(GetType(), () => new MongoDbDatabase(this));
+                }
             }
         }
         
@@ -526,8 +543,6 @@ namespace JustCSharp.Database.MongoDB.Context
             {
                 InitializeDatabase(database, client, session, modelCache);
             }
-
-            UnitOfWork?.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
         }
         
         private async Task InitializeDatabaseWithCacheAsync(MongoClient client, IMongoDatabase database, IClientSessionHandle session, CancellationToken cancellationToken = default)
@@ -543,8 +558,6 @@ namespace JustCSharp.Database.MongoDB.Context
             {
                 InitializeDatabase(database, client, session, modelCache);
             }
-
-            UnitOfWork?.GetOrAddDatabase(this.GetType(), () => new MongoDbDatabase(this));
         }
 
         #endregion
