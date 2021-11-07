@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using JustCSharp.Data.Enums;
 
 namespace JustCSharp.Utility.Helpers
 {
@@ -12,6 +13,8 @@ namespace JustCSharp.Utility.Helpers
 
         // 128-bit = 32 character
         public static string PassPhrase;
+        
+        public delegate HashAlgorithm HashAlgorithmCreator();
 
         public static string Encrypt(string text)
         {
@@ -76,84 +79,61 @@ namespace JustCSharp.Utility.Helpers
             }
         }
 
-        // public static string EncryptRijndael(string plainText)
-        // {
-        //     var salStringBytes = GenerateRandomEntropy();
-        //     var ivStringBytes = GenerateRandomEntropy();
-        //     var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
-        //     using (var password = new Rfc2898DeriveBytes(PassPhrase, salStringBytes, DerivationIteration))
-        //     {
-        //         var keyBytes = password.GetBytes(KeySize / 8);
-        //         using(var symetricKey = new RijndaelManaged())
-        //         {
-        //             symetricKey.BlockSize = KeySize;
-        //             symetricKey.Mode = CipherMode.CBC;
-        //             symetricKey.Padding = PaddingMode.PKCS7;
-        //             
-        //             using(var encryptor = symetricKey.CreateEncryptor(keyBytes, ivStringBytes))
-        //             {
-        //                 using (var memoryStream = new MemoryStream())
-        //                 {
-        //                     using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-        //                     {
-        //                         cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-        //                         cryptoStream.FlushFinalBlock();
-        //             
-        //                         var cipherTextBytes = salStringBytes;
-        //                         cipherTextBytes = cipherTextBytes.Concat(ivStringBytes).ToArray();
-        //                         cipherTextBytes = cipherTextBytes.Concat(memoryStream.ToArray()).ToArray();
-        //                         memoryStream.Close();
-        //                         cryptoStream.Close();
-        //                         return Convert.ToBase64String(cipherTextBytes);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        //
-        // public static string DecryptRijndael(string encryptedText)
-        // {
-        //     var cipherTextBytesWithSaltAndIv = Convert.FromBase64String(encryptedText);
-        //     var salStringBytes = cipherTextBytesWithSaltAndIv.Take(KeySize / 8).ToArray();
-        //     var ivStringBytes = cipherTextBytesWithSaltAndIv.Skip(KeySize / 8).Take(KeySize / 8).ToArray();
-        //     var cipherTextBytes = cipherTextBytesWithSaltAndIv.Skip((KeySize / 8) * 2).Take(cipherTextBytesWithSaltAndIv.Length - ((KeySize / 8) * 2)).ToArray();
-        //
-        //     using(var password = new Rfc2898DeriveBytes(PassPhrase, salStringBytes, DerivationIteration))
-        //     {
-        //         var keyBytes = password.GetBytes(KeySize / 8);
-        //         using(var symetricKey = new RijndaelManaged())
-        //         {
-        //             symetricKey.BlockSize = KeySize;
-        //             symetricKey.Mode = CipherMode.CBC;
-        //             symetricKey.Padding = PaddingMode.PKCS7;
-        //
-        //             using(var decryptor = symetricKey.CreateDecryptor(keyBytes, ivStringBytes))
-        //             {
-        //                 using (var memoryStream = new MemoryStream())
-        //                 {
-        //                     using(var cryptorStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
-        //                     {
-        //                         var plainTextBytes = new byte[cipherTextBytes.Length];
-        //                         var decryptByteCount = cryptorStream.Read(plainTextBytes, 0, plainTextBytes.Length);
-        //                         memoryStream.Close();
-        //                         cryptorStream.Close();
-        //                         return Encoding.UTF8.GetString(plainTextBytes, 0, decryptByteCount);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        //
-        // private static byte[] GenerateRandomEntropy()
-        // {
-        //     var randomBytes = new byte[KeySize / 8];
-        //     using (var rngCsp = new RNGCryptoServiceProvider()) 
-        //     {
-        //         rngCsp.GetBytes(randomBytes);
-        //     }
-        //     return randomBytes;
-        // }
+        /// <summary>
+        /// Hash string
+        /// </summary>
+        /// <param name="rawText"></param>
+        /// <param name="hashAlgorithm"></param>
+        /// <param name="encoding"></param>
+        /// <returns>Hashed string in UPPERCASE</returns>
+        /// <exception cref="NotSupportedException"></exception>
+        public static string Hash(string rawText, HashAlgorithmEnum hashAlgorithm, Encoding encoding = null)
+        {
+            HashAlgorithmCreator hashCreator = SHA256Managed.Create;
+            switch (hashAlgorithm)
+            {
+                case HashAlgorithmEnum.MD5:
+                    hashCreator = MD5.Create;
+                    break;
+                
+                case HashAlgorithmEnum.SHA1:
+                    hashCreator = SHA1.Create;
+                    break;
+                
+                case HashAlgorithmEnum.SHA256:
+                    hashCreator = SHA256.Create;
+                    break;
+                
+                case HashAlgorithmEnum.SHA384:
+                    hashCreator = SHA384.Create;
+                    break;
+                
+                case HashAlgorithmEnum.SHA512:
+                    hashCreator = SHA512.Create;
+                    break;
+                
+                default:
+                    throw new NotSupportedException();
+            }
+            
+            if (encoding == null)
+            {
+                encoding = Encoding.UTF8;
+            }
+            
+            using (var hashAlgorithmInstance = hashCreator())
+            {
+                byte[] inputBytes = encoding.GetBytes(rawText);
+                byte[] hashBytes = hashAlgorithmInstance.ComputeHash(inputBytes);
+
+                // Convert the byte array to hexadecimal string
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("X2"));
+                }
+                return sb.ToString();
+            }
+        }
     }
 }
