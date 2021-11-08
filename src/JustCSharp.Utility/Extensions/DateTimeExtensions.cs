@@ -25,5 +25,10 @@ namespace JustCSharp.Utility.Extensions
 
             return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, VietNameTimezone);
         }
+
+        public static DateTime ZeroOut(this DateTime dateTime, DateTimeKind kind = DateTimeKind.Local)
+        {
+            return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 0, 0, 0, kind);
+        }
     }
 }
