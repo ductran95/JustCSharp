@@ -188,8 +188,14 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is IAuditable auditableEntity)
             {
-                var authContext = AuthContextProvider?.GetAuthContext();
-                var userId = authContext?.UserId;
+                string userId = null;
+                
+                if (AuthContextProvider != null)
+                {
+                    var authContext = AuthContextProvider.GetAuthContext();
+                    userId = authContext?.UserId;
+                }
+                
                 auditableEntity.CheckAndSetAudit(userId);
             }
         }
@@ -198,8 +204,14 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is IAuditable auditableEntity)
             {
-                var authContext = await AuthContextProvider?.GetAuthContextAsync(cancellationToken);
-                var userId = authContext?.UserId;
+                string userId = null;
+                
+                if (AuthContextProvider != null)
+                {
+                    var authContext = await AuthContextProvider.GetAuthContextAsync(cancellationToken);
+                    userId = authContext?.UserId;
+                }
+                
                 auditableEntity.CheckAndSetAudit(userId);
             }
         }
@@ -208,8 +220,14 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is ISoftDelete softDeleteEntity)
             {
-                var authContext = AuthContextProvider?.GetAuthContext();
-                var userId = authContext?.UserId;
+                string userId = null;
+                
+                if (AuthContextProvider != null)
+                {
+                    var authContext = AuthContextProvider.GetAuthContext();
+                    userId = authContext?.UserId;
+                }
+                
                 softDeleteEntity.CheckAndSetDeleteAudit(userId);
             }
         }
@@ -218,8 +236,14 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is ISoftDelete softDeleteEntity)
             {
-                var authContext = await AuthContextProvider?.GetAuthContextAsync(cancellationToken);
-                var userId = authContext?.UserId;
+                string userId = null;
+                
+                if (AuthContextProvider != null)
+                {
+                    var authContext = await AuthContextProvider.GetAuthContextAsync(cancellationToken);
+                    userId = authContext?.UserId;
+                }
+                
                 softDeleteEntity.CheckAndSetDeleteAudit(userId);
             }
         }
