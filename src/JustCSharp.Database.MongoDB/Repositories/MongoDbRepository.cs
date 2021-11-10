@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Authentication;
+using JustCSharp.Core.DependencyInjection;
 using JustCSharp.Data.Entities;
 using JustCSharp.Database.MongoDB.Context;
 using MongoDB.Driver;
@@ -18,12 +19,14 @@ namespace JustCSharp.Database.MongoDB.Repositories
         where TDbContext: class, IMongoDbContext 
         where TEntity : class, IEntity
     {
-        protected readonly IAuthContextProvider _authContextProvider;
+        protected readonly ILazyServiceProvider _serviceProvider;
         protected readonly TDbContext _dbContext;
+        
+        protected IAuthContextProvider AuthContextProvider => _serviceProvider.LazyGetService<IAuthContextProvider>();
 
-        public MongoDbRepository(IAuthContextProvider authContextProvider, TDbContext dbContext)
+        public MongoDbRepository(ILazyServiceProvider serviceProvider, TDbContext dbContext)
         {
-            _authContextProvider = authContextProvider;
+            _serviceProvider = serviceProvider;
             _dbContext = dbContext;
         }
 
@@ -185,8 +188,8 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is IAuditable auditableEntity)
             {
-                var authContext = _authContextProvider.GetAuthContext();
-                var userId = authContext.UserId;
+                var authContext = AuthContextProvider?.GetAuthContext();
+                var userId = authContext?.UserId;
                 auditableEntity.CheckAndSetAudit(userId);
             }
         }
@@ -195,8 +198,8 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is IAuditable auditableEntity)
             {
-                var authContext = await _authContextProvider.GetAuthContextAsync(cancellationToken);
-                var userId = authContext.UserId;
+                var authContext = await AuthContextProvider?.GetAuthContextAsync(cancellationToken);
+                var userId = authContext?.UserId;
                 auditableEntity.CheckAndSetAudit(userId);
             }
         }
@@ -205,8 +208,8 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is ISoftDelete softDeleteEntity)
             {
-                var authContext = _authContextProvider.GetAuthContext();
-                var userId = authContext.UserId;
+                var authContext = AuthContextProvider?.GetAuthContext();
+                var userId = authContext?.UserId;
                 softDeleteEntity.CheckAndSetDeleteAudit(userId);
             }
         }
@@ -215,8 +218,8 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             if (entity is ISoftDelete softDeleteEntity)
             {
-                var authContext = await _authContextProvider.GetAuthContextAsync(cancellationToken);
-                var userId = authContext.UserId;
+                var authContext = await AuthContextProvider?.GetAuthContextAsync(cancellationToken);
+                var userId = authContext?.UserId;
                 softDeleteEntity.CheckAndSetDeleteAudit(userId);
             }
         }
@@ -828,7 +831,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
         where TDbContext : class, IMongoDbContext
         where TEntity : class, IEntity<TKey>
     {
-        public MongoDbRepository(IAuthContextProvider authContextProvider, TDbContext dbContext) : base(authContextProvider, dbContext)
+        public MongoDbRepository(ILazyServiceProvider serviceProvider, TDbContext dbContext) : base(serviceProvider, dbContext)
         {
         }
 
@@ -880,6 +883,5 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
             return Builders<TEntity>.Filter.Or(entityFilters);
         }
-        
     }
 }
