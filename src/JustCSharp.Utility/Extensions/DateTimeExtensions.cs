@@ -4,7 +4,7 @@ namespace JustCSharp.Utility.Extensions
 {
     public static class DateTimeExtensions
     {
-        public static readonly TimeZoneInfo VietNameTimezone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+        public static readonly TimeZoneInfo VietNameTimezone = TimeZoneInfo.CreateCustomTimeZone("Asia/Hanoi", new TimeSpan(7,0,0), "Viet Nam Time", "Viet Nam Time");
         
         public static DateTime ToVietNamTime(this DateTime utcDateTime)
         {
