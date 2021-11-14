@@ -9,6 +9,7 @@ namespace JustCSharp.Data.Constants
         public const string NotFound = "NotFound";
         public const string ApiClientError = "ApiClientError";
         public const string Duplicated = "Duplicated";
+        public const string MultiTenancy = "MultiTenancy";
     }
 
     public static class JustCSharpErrorMessages
@@ -18,5 +19,7 @@ namespace JustCSharp.Data.Constants
         public const string Unauthorized = "You don't have permision to access {0}";
         public const string FieldNotFound = "Field Not Found";
         public const string DataNotFound = "Data Not Found {0}";
+        
+        public const string NoTenant = "No tenant in request";
     }
 }
