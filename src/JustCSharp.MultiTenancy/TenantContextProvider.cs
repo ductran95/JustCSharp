@@ -25,7 +25,7 @@ namespace JustCSharp.Authentication
         {
             if (_tenantContext == null)
             {
-                _tenantContext = CreateAuthContext();
+                _tenantContext = CreateTenantContext();
             }
             return _tenantContext;
         }
@@ -34,17 +34,17 @@ namespace JustCSharp.Authentication
         {
             if (_tenantContext == null)
             {
-                _tenantContext = await CreateAuthContextAsync(cancellationToken);
+                _tenantContext = await CreateTenantContextAsync(cancellationToken);
             }
             return _tenantContext;
         }
 
-        protected virtual ITenantContext CreateAuthContext()
+        protected virtual ITenantContext CreateTenantContext()
         {
             return new TenantContextBase();
         }
 
-        protected virtual async Task<ITenantContext> CreateAuthContextAsync(CancellationToken cancellationToken = default)
+        protected virtual async Task<ITenantContext> CreateTenantContextAsync(CancellationToken cancellationToken = default)
         {
             return await Task.FromResult(new TenantContextBase());
         }
@@ -65,7 +65,7 @@ namespace JustCSharp.Authentication
         }
 
         public ITenantContext TenantContext => GetTenantContext();
-        public TAuthContext AuthContextOfT => GetTenantContextOfT();
+        public TAuthContext TenantContextOfT => GetTenantContextOfT();
         
         public virtual ITenantContext GetTenantContext()
         {
@@ -81,7 +81,7 @@ namespace JustCSharp.Authentication
         {
             if (_authContext == null)
             {
-                _authContext = CreateAuthContext();
+                _authContext = CreateTenantContext();
             }
             return _authContext;
         }
@@ -90,13 +90,13 @@ namespace JustCSharp.Authentication
         {
             if (_authContext == null)
             {
-                _authContext = await CreateAuthContextAsync(cancellationToken);
+                _authContext = await CreateTenantContextAsync(cancellationToken);
             }
             return _authContext;
         }
 
-        protected abstract TAuthContext CreateAuthContext();
+        protected abstract TAuthContext CreateTenantContext();
 
-        protected abstract Task<TAuthContext> CreateAuthContextAsync(CancellationToken cancellationToken = default);
+        protected abstract Task<TAuthContext> CreateTenantContextAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -12,7 +12,7 @@ namespace JustCSharp.Authentication.Extensions
             AddJustCSharpTenantContext<TTenantContextProvider>(serviceCollection);
             
             serviceCollection.TryAddScoped<ITenantContextProviderOfT<TTenantContext>, TTenantContextProvider>();
-            serviceCollection.TryAddScoped<TTenantContext>(sp => sp.GetRequiredService<ITenantContextProviderOfT<TTenantContext>>().AuthContextOfT);
+            serviceCollection.TryAddScoped<TTenantContext>(sp => sp.GetRequiredService<ITenantContextProviderOfT<TTenantContext>>().TenantContextOfT);
             
             return serviceCollection;
         }

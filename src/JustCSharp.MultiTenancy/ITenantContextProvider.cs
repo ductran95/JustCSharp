@@ -13,7 +13,7 @@ namespace JustCSharp.Authentication
     public interface ITenantContextProviderOfT<TAuthContext>: ITenantContextProvider 
         where TAuthContext: class, ITenantContext
     {
-        TAuthContext AuthContextOfT { get; }
+        TAuthContext TenantContextOfT { get; }
         TAuthContext GetTenantContextOfT();
         Task<TAuthContext> GetTenantContextOfTAsync(CancellationToken cancellationToken = default);
     }
