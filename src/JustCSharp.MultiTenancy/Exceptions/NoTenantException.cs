@@ -4,7 +4,7 @@ using JustCSharp.Core.Exceptions;
 using JustCSharp.Data;
 using JustCSharp.Data.Constants;
 
-namespace ShopeeManagement.Domain.Exceptions
+namespace JustCSharp.MultiTenancy.Exceptions
 {
     public class NoTenantException: DomainException
     {

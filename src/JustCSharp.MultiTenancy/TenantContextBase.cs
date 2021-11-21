@@ -1,4 +1,4 @@
-namespace JustCSharp.Authentication
+namespace JustCSharp.MultiTenancy
 {
     public class TenantContextBase: ITenantContext
     {

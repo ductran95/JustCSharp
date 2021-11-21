@@ -2,7 +2,7 @@ using JustCSharp.Core.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace JustCSharp.Authentication.Extensions
+namespace JustCSharp.MultiTenancy.Extensions
 {
     public static class ServiceCollectionExtensions
     {

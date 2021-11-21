@@ -4,7 +4,7 @@ using JustCSharp.Core.DependencyInjection;
 using JustCSharp.Core.Logging.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace JustCSharp.Authentication
+namespace JustCSharp.MultiTenancy
 {
     public class TenantContextProvider: ITenantContextProvider
     {
@@ -50,12 +50,12 @@ namespace JustCSharp.Authentication
         }
     }
 
-    public abstract class TenantContextProviderOfT<TAuthContext>: ITenantContextProviderOfT<TAuthContext> 
-        where TAuthContext: class, ITenantContext
+    public abstract class TenantContextProviderOfT<TTenantContext>: ITenantContextProviderOfT<TTenantContext> 
+        where TTenantContext: class, ITenantContext
     {
         protected readonly ILazyServiceProvider _serviceProvider;
         
-        protected TAuthContext _authContext;
+        protected TTenantContext _tenantContext;
         
         private ILogger Logger => _serviceProvider.GetLogger(typeof(TenantContextProviderOfT<>));
 
@@ -65,7 +65,7 @@ namespace JustCSharp.Authentication
         }
 
         public ITenantContext TenantContext => GetTenantContext();
-        public TAuthContext TenantContextOfT => GetTenantContextOfT();
+        public TTenantContext TenantContextOfT => GetTenantContextOfT();
         
         public virtual ITenantContext GetTenantContext()
         {
@@ -77,26 +77,26 @@ namespace JustCSharp.Authentication
             return await GetTenantContextOfTAsync(cancellationToken);
         }
 
-        public virtual TAuthContext GetTenantContextOfT()
+        public virtual TTenantContext GetTenantContextOfT()
         {
-            if (_authContext == null)
+            if (_tenantContext == null)
             {
-                _authContext = CreateTenantContext();
+                _tenantContext = CreateTenantContext();
             }
-            return _authContext;
+            return _tenantContext;
         }
 
-        public virtual async Task<TAuthContext> GetTenantContextOfTAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<TTenantContext> GetTenantContextOfTAsync(CancellationToken cancellationToken = default)
         {
-            if (_authContext == null)
+            if (_tenantContext == null)
             {
-                _authContext = await CreateTenantContextAsync(cancellationToken);
+                _tenantContext = await CreateTenantContextAsync(cancellationToken);
             }
-            return _authContext;
+            return _tenantContext;
         }
 
-        protected abstract TAuthContext CreateTenantContext();
+        protected abstract TTenantContext CreateTenantContext();
 
-        protected abstract Task<TAuthContext> CreateTenantContextAsync(CancellationToken cancellationToken = default);
+        protected abstract Task<TTenantContext> CreateTenantContextAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JustCSharp.Authentication
+namespace JustCSharp.MultiTenancy
 {
     public interface ITenantContextProvider
     {
@@ -10,11 +10,11 @@ namespace JustCSharp.Authentication
         Task<ITenantContext> GetTenantContextAsync(CancellationToken cancellationToken = default);
     }
     
-    public interface ITenantContextProviderOfT<TAuthContext>: ITenantContextProvider 
-        where TAuthContext: class, ITenantContext
+    public interface ITenantContextProviderOfT<TTenantContext>: ITenantContextProvider 
+        where TTenantContext: class, ITenantContext
     {
-        TAuthContext TenantContextOfT { get; }
-        TAuthContext GetTenantContextOfT();
-        Task<TAuthContext> GetTenantContextOfTAsync(CancellationToken cancellationToken = default);
+        TTenantContext TenantContextOfT { get; }
+        TTenantContext GetTenantContextOfT();
+        Task<TTenantContext> GetTenantContextOfTAsync(CancellationToken cancellationToken = default);
     }
 }
