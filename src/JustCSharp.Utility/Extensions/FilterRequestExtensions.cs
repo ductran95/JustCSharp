@@ -86,11 +86,11 @@ namespace JustCSharp.Utility.Extensions
                 }
                 else if (filter.ValueList != null)
                 {
-                    expression = ExpressionHelper.CreateEqualExpression<T>(param, prop.Name, filter.ValueList);
+                    expression = ExpressionHelper.CreateContainExpression<T>(param, prop.Name, filter.ValueList);
                 }
                 else
                 {
-                    expression = ExpressionHelper.CreateEqualExpression<T>(param, prop.Name, filter.ValueString);
+                    expression = ExpressionHelper.CreateContainExpression<T>(param, prop.Name, filter.ValueString);
                 }
                 
                 expressions.Add(expression);

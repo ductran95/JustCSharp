@@ -107,7 +107,7 @@ namespace JustCSharp.Utility.Helpers
         }
         
         public static Expression<Func<T, bool>> CreateContainExpression<T>(ParameterExpression param, string property,
-            ArrayList data)
+            IEnumerable data)
         {
             string[] properties = property.Split('.');
             Type propertyType = typeof(T);
