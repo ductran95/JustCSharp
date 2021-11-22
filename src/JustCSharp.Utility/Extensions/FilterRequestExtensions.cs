@@ -47,7 +47,13 @@ namespace JustCSharp.Utility.Extensions
 
                     if (expressionFrom != null && expressionTo != null)
                     {
-                        expression = ExpressionHelper.CreateAndExpression(param, expressionFrom, expressionTo);
+                        var leftVisitor = new ReplaceExpressionVisitor(expressionFrom.Parameters[0], param);
+                        var left = leftVisitor.Visit(expressionFrom.Body);
+                
+                        var rightVisitor = new ReplaceExpressionVisitor(expressionTo.Parameters[0], param);
+                        var right = rightVisitor.Visit(expressionTo.Body);
+                        
+                        expression = ExpressionHelper.CreateAndExpression<T>(param, left, right);
                     }
                     else
                     {
@@ -73,7 +79,13 @@ namespace JustCSharp.Utility.Extensions
 
                     if (expressionFrom != null && expressionTo != null)
                     {
-                        expression = ExpressionHelper.CreateAndExpression(param, expressionFrom, expressionTo);
+                        var leftVisitor = new ReplaceExpressionVisitor(expressionFrom.Parameters[0], param);
+                        var left = leftVisitor.Visit(expressionFrom.Body);
+                
+                        var rightVisitor = new ReplaceExpressionVisitor(expressionTo.Parameters[0], param);
+                        var right = rightVisitor.Visit(expressionTo.Body);
+                        
+                        expression = ExpressionHelper.CreateAndExpression<T>(param, left, right);
                     }
                     else
                     {
