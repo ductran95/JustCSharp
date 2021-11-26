@@ -84,7 +84,7 @@ namespace JustCSharp.Utility.Helpers
         }
         
         public static Expression<Func<T, bool>> CreateContainExpression<T>(ParameterExpression param, string property,
-            string data)
+            string data, StringComparison? stringComparison)
         {
             MethodInfo containMethod = typeof(string).GetMethod("Contains", new[] {typeof(string)});
             
@@ -99,11 +99,35 @@ namespace JustCSharp.Utility.Helpers
                 propertyExp = Expression.Property(propertyExp, pi);
                 propertyType = pi.PropertyType;
             }
-            
-            Expression dataExp = Expression.Constant(data, propertyType);
-            
-            // ReSharper disable once AssignNullToNotNullAttribute
-            return Expression.Lambda<Func<T, bool>>(Expression.Call(propertyExp, containMethod, dataExp), param);
+
+            Expression dataExp = null;
+            if (stringComparison != null)
+            {
+                switch (stringComparison)
+                {
+                    case StringComparison.CurrentCultureIgnoreCase:
+                    case StringComparison.OrdinalIgnoreCase:
+                        dataExp = Expression.Constant(data.ToLower(), propertyType);
+                        
+                        MethodInfo toLowerMethod = typeof(string).GetMethod("ToLower");
+                        return Expression.Lambda<Func<T, bool>>(Expression.Call(Expression.Call(propertyExp, toLowerMethod), containMethod, dataExp), param);
+                    
+                    case StringComparison.InvariantCultureIgnoreCase:
+                        dataExp = Expression.Constant(data.ToLowerInvariant(), propertyType);
+                        
+                        MethodInfo toLowerInvariantMethod = typeof(string).GetMethod("ToLowerInvariant");
+                        return Expression.Lambda<Func<T, bool>>(Expression.Call(Expression.Call(propertyExp, toLowerInvariantMethod), containMethod, dataExp), param);
+                    
+                    default:
+                        dataExp = Expression.Constant(data, propertyType);
+                        return Expression.Lambda<Func<T, bool>>(Expression.Call(propertyExp, containMethod, dataExp), param);
+                }
+            }
+            else
+            {
+                dataExp = Expression.Constant(data, propertyType);
+                return Expression.Lambda<Func<T, bool>>(Expression.Call(propertyExp, containMethod, dataExp), param);
+            }
         }
         
         public static Expression<Func<T, bool>> CreateContainExpression<T>(ParameterExpression param, string property,

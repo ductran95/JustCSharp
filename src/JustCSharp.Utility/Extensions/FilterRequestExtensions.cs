@@ -102,7 +102,7 @@ namespace JustCSharp.Utility.Extensions
                 }
                 else
                 {
-                    expression = ExpressionHelper.CreateContainExpression<T>(param, prop.Name, filter.ValueString);
+                    expression = ExpressionHelper.CreateContainExpression<T>(param, prop.Name, filter.ValueString, StringComparison.InvariantCultureIgnoreCase);
                 }
                 
                 expressions.Add(expression);
