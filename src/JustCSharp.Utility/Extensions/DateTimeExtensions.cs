@@ -4,7 +4,7 @@ namespace JustCSharp.Utility.Extensions
 {
     public static class DateTimeExtensions
     {
-        public static readonly TimeZoneInfo VietNameTimezone = TimeZoneInfo.CreateCustomTimeZone("Asia/Hanoi", new TimeSpan(7,0,0), "Viet Nam Time", "Viet Nam Time");
+        public static readonly TimeZoneInfo VietNamTimezone = TimeZoneInfo.CreateCustomTimeZone("Asia/Hanoi", new TimeSpan(7,0,0), "Viet Nam Time", "Viet Nam Time");
         
         public static DateTime ToVietNamTime(this DateTime utcDateTime)
         {
@@ -13,7 +13,7 @@ namespace JustCSharp.Utility.Extensions
                 throw new ArgumentException("Need to be UTC Time");
             }
 
-            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, VietNameTimezone);
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, VietNamTimezone);
         }
         
         public static DateTime FromVietNamTime(this DateTime utcDateTime)
@@ -23,7 +23,7 @@ namespace JustCSharp.Utility.Extensions
                 throw new ArgumentException("Need to be Local Time");
             }
 
-            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, VietNameTimezone);
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, VietNamTimezone);
         }
 
         public static DateTime ZeroOut(this DateTime dateTime, DateTimeKind kind = DateTimeKind.Local)
