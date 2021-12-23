@@ -89,7 +89,7 @@ namespace JustCSharp.Utility.Helpers
         /// <exception cref="NotSupportedException"></exception>
         public static string Hash(string rawText, HashAlgorithmEnum hashAlgorithm, Encoding encoding = null)
         {
-            HashAlgorithmCreator hashCreator = SHA256Managed.Create;
+            HashAlgorithmCreator hashCreator;
             switch (hashAlgorithm)
             {
                 case HashAlgorithmEnum.MD5:
