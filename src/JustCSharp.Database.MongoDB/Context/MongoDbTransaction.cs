@@ -5,7 +5,7 @@ namespace JustCSharp.Database.MongoDB.Context
 {
     public class MongoDbTransaction: ITransaction
     {
-        public IClientSessionHandle SessionHandle { get; private set; }
+        public IClientSessionHandle SessionHandle { get; set; }
 
         public MongoDbTransaction(IClientSessionHandle sessionHandle)
         {

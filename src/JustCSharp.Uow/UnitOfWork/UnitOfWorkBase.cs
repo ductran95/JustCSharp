@@ -17,7 +17,9 @@ namespace JustCSharp.Uow.UnitOfWork
     {
         protected readonly ILazyServiceProvider _serviceProvider;
         protected readonly Dictionary<Type, IDatabase> _databases;
-        protected readonly Dictionary<Type, ITransaction> _transactions;
+        protected UnitOfWorkTransaction _currentTransaction;
+
+        public ITransaction CurrentTransaction => _currentTransaction;
 
         private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkBase));
         
@@ -25,7 +27,6 @@ namespace JustCSharp.Uow.UnitOfWork
         {
             _serviceProvider = serviceProvider;
             _databases = new Dictionary<Type, IDatabase>();
-            _transactions = new Dictionary<Type, ITransaction>();
         }
 
         public virtual bool IsTransactional { get; private set; }
@@ -40,6 +41,16 @@ namespace JustCSharp.Uow.UnitOfWork
             if (_databases.ContainsKey(type))
             {
                 throw new InfrastructureException("There is already a database API in this unit of work with given type: " + type.Name);
+            }
+
+            if (database is ISupportTransaction databaseSupportTransaction && databaseSupportTransaction.CurrentTransaction != null)
+            {
+                if (_currentTransaction == null)
+                {
+                    _currentTransaction = new UnitOfWorkTransaction();
+                }
+                
+                _currentTransaction.ChildrenTransactions.Add(databaseSupportTransaction.CurrentTransaction);
             }
 
             _databases.Add(type, database);
@@ -57,48 +68,17 @@ namespace JustCSharp.Uow.UnitOfWork
             return db;
         }
         
-        public virtual ITransaction FindTransaction([NotNull] Type type)
-        {
-            return _transactions.GetOrDefault(type);
-        }
-
-        public virtual void AddTransaction([NotNull] Type type, [NotNull] ITransaction database)
-        {
-            if (_databases.ContainsKey(type))
-            {
-                throw new InfrastructureException("There is already a transaction API in this unit of work with given type: " + type.Name);
-            }
-
-            _transactions.Add(type, database);
-        }
-
-        public virtual ITransaction GetOrAddTransaction([NotNull] Type type, Func<ITransaction> factory)
-        {
-            var db = FindTransaction(type);
-            if (db == null)
-            {
-                db = factory();
-                AddTransaction(type, db);
-            }
-
-            return db;
-        }
-
         public virtual bool IsInTransaction()
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportTransaction)
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
+                    var inTransaction = databaseSupportTransaction.IsInTransaction();
+                    if (!inTransaction)
                     {
-                        var inTransaction = (databaseApi as ISupportTransaction).IsInTransaction();
-                        if (!inTransaction)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
-                    catch { }
                 }
             }
 
@@ -107,19 +87,15 @@ namespace JustCSharp.Uow.UnitOfWork
 
         public virtual async Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportTransaction)
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
+                    var inTransaction = await databaseSupportTransaction.IsInTransactionAsync(cancellationToken);
+                    if (!inTransaction)
                     {
-                        var inTransaction = await (databaseApi as ISupportTransaction).IsInTransactionAsync(cancellationToken);
-                        if (!inTransaction)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
-                    catch { }
                 }
             }
 
@@ -129,15 +105,22 @@ namespace JustCSharp.Uow.UnitOfWork
         public virtual void BeginTransaction()
         {
             IsTransactional = true;
-            foreach (var databaseApi in GetAllActiveDatabases())
+            
+            if (_currentTransaction == null)
             {
-                if (databaseApi is ISupportTransaction)
+                _currentTransaction = new UnitOfWorkTransaction();
+            }
+            
+            foreach (var database in GetAllActiveDatabases())
+            {
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
+                    var inTransaction = databaseSupportTransaction.IsInTransaction();
+                    if (!inTransaction)
                     {
-                        (databaseApi as ISupportTransaction).BeginTransaction();
+                        databaseSupportTransaction.BeginTransaction();
+                        _currentTransaction.ChildrenTransactions.Add(databaseSupportTransaction.CurrentTransaction);
                     }
-                    catch { }
                 }
             }
         }
@@ -145,105 +128,88 @@ namespace JustCSharp.Uow.UnitOfWork
         public virtual async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             IsTransactional = true;
-            foreach (var databaseApi in GetAllActiveDatabases())
+            
+            if (_currentTransaction == null)
             {
-                if (databaseApi is ISupportTransaction)
+                _currentTransaction = new UnitOfWorkTransaction();
+            }
+            
+            foreach (var database in GetAllActiveDatabases())
+            {
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
+                    var inTransaction = await databaseSupportTransaction.IsInTransactionAsync(cancellationToken);
+                    if (!inTransaction)
                     {
-                        await (databaseApi as ISupportTransaction).BeginTransactionAsync(cancellationToken);
+                        await databaseSupportTransaction.BeginTransactionAsync(cancellationToken);
+                        _currentTransaction.ChildrenTransactions.Add(databaseSupportTransaction.CurrentTransaction);
                     }
-                    catch { }
                 }
             }
         }
 
         public virtual void CommitTransaction()
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportTransaction)
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
-                    {
-                        (databaseApi as ISupportTransaction).CommitTransaction();
-                    }
-                    catch { }
+                    databaseSupportTransaction.CommitTransaction();
                 }
             }
         }
 
         public virtual async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportTransaction)
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
-                    {
-                        await (databaseApi as ISupportTransaction).CommitTransactionAsync(cancellationToken);
-                    }
-                    catch { }
+                    await databaseSupportTransaction.CommitTransactionAsync(cancellationToken);
                 }
             }
         }
 
         public virtual void RollbackTransaction()
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportTransaction)
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
-                    {
-                        (databaseApi as ISupportTransaction).RollbackTransaction();
-                    }
-                    catch { }
+                    databaseSupportTransaction.RollbackTransaction();
                 }
             }
         }
 
         public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportTransaction)
+                if (database is ISupportTransaction databaseSupportTransaction)
                 {
-                    try
-                    {
-                        await (databaseApi as ISupportTransaction).RollbackTransactionAsync(cancellationToken);
-                    }
-                    catch { }
+                    await databaseSupportTransaction.RollbackTransactionAsync(cancellationToken);
                 }
             }
         }
 
         public virtual void SaveChanges()
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportSaveChange)
+                if (database is ISupportSaveChange databaseSupportSaveChange)
                 {
-                    try
-                    {
-                        (databaseApi as ISupportSaveChange).SaveChanges();
-                    }
-                    catch { }
+                    databaseSupportSaveChange.SaveChanges();
                 }
             }
         }
 
         public virtual async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var databaseApi in GetAllActiveDatabases())
+            foreach (var database in GetAllActiveDatabases())
             {
-                if (databaseApi is ISupportSaveChange)
+                if (database is ISupportSaveChange databaseSupportSaveChange)
                 {
-                    try
-                    {
-                        await (databaseApi as ISupportSaveChange).SaveChangesAsync(cancellationToken);
-                    }
-                    catch { }
+                    await databaseSupportSaveChange.SaveChangesAsync(cancellationToken);
                 }
             }
         }

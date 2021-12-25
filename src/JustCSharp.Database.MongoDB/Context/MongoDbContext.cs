@@ -9,6 +9,7 @@ using JustCSharp.Core.Logging.Extensions;
 using JustCSharp.Data.Entities;
 using JustCSharp.Database.MongoDB.Attribute;
 using JustCSharp.Database.MongoDB.Model;
+using JustCSharp.Uow;
 using JustCSharp.Uow.UnitOfWork;
 using JustCSharp.Utility.Extensions;
 using JustCSharp.Utility.Helpers;
@@ -30,6 +31,7 @@ namespace JustCSharp.Database.MongoDB.Context
         protected readonly string _id;
         protected readonly ILazyServiceProvider _serviceProvider;
         protected readonly MongoDbContextOptions _dbContextOptions;
+        protected MongoDbTransaction _currentTransaction;
 
         public MongoDbContextOptions DbContextOptions => _dbContextOptions;
 
@@ -42,6 +44,7 @@ namespace JustCSharp.Database.MongoDB.Context
         public IMongoClient Client { get; protected set; }
         public IMongoDatabase Database { get; protected set; }
         public IClientSessionHandle SessionHandle { get; protected set; }
+        public ITransaction CurrentTransaction => _currentTransaction;
         protected IUnitOfWork UnitOfWork => _serviceProvider.LazyGetService<IUnitOfWork>();
         protected IMongoEntityModelCache EntityModelCache => _serviceProvider.LazyGetService<IMongoEntityModelCache>();
 
@@ -243,14 +246,14 @@ namespace JustCSharp.Database.MongoDB.Context
                 return;
             }
             
-            var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
-            IClientSessionHandle session = activeTransaction?.SessionHandle;
-
-            if (session == null)
+            var session = CreateSession(Client);
+            if (_currentTransaction == null)
             {
-                session = CreateSession();
-
-                UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+                _currentTransaction = new MongoDbTransaction(session);
+            }
+            else
+            {
+                _currentTransaction.SessionHandle = session;
             }
             
             stopwatch?.Stop();
@@ -275,14 +278,14 @@ namespace JustCSharp.Database.MongoDB.Context
                 return;
             }
             
-            var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
-            IClientSessionHandle session = activeTransaction?.SessionHandle;
-
-            if (session == null)
+            var session = await CreateSessionAsync(Client, cancellationToken);
+            if (_currentTransaction == null)
             {
-                session = await CreateSessionAsync(cancellationToken);
-
-                UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+                _currentTransaction = new MongoDbTransaction(session);
+            }
+            else
+            {
+                _currentTransaction.SessionHandle = session;
             }
             
             stopwatch?.Stop();
@@ -628,14 +631,14 @@ namespace JustCSharp.Database.MongoDB.Context
 
             if (isTransactional)
             {
-                var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
-                session = activeTransaction?.SessionHandle;
-
-                if (session == null)
+                session = CreateSession(client);
+                if (_currentTransaction == null)
                 {
-                    session = CreateSession();
-
-                    UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+                    _currentTransaction = new MongoDbTransaction(session);
+                }
+                else
+                {
+                    _currentTransaction.SessionHandle = session;
                 }
             }
             
@@ -660,14 +663,14 @@ namespace JustCSharp.Database.MongoDB.Context
 
             if (isTransactional)
             {
-                var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
-                session = activeTransaction?.SessionHandle;
-
-                if (session == null)
+                session = await CreateSessionAsync(client, cancellationToken);
+                if (_currentTransaction == null)
                 {
-                    session = await CreateSessionAsync(cancellationToken);
-
-                    UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+                    _currentTransaction = new MongoDbTransaction(session);
+                }
+                else
+                {
+                    _currentTransaction.SessionHandle = session;
                 }
             }
 
@@ -721,12 +724,12 @@ namespace JustCSharp.Database.MongoDB.Context
             stopwatch = null;
         }
 
-        private IClientSessionHandle CreateSession()
+        private IClientSessionHandle CreateSession(IMongoClient client)
         {
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CreateSession");
             
-            var session = Client.StartSession();
+            var session = client.StartSession();
 
             if (_dbContextOptions.Timeout.HasValue)
             {
@@ -742,12 +745,12 @@ namespace JustCSharp.Database.MongoDB.Context
             return session;
         }
         
-        private async Task<IClientSessionHandle> CreateSessionAsync(CancellationToken cancellationToken = default)
+        private async Task<IClientSessionHandle> CreateSessionAsync(IMongoClient client, CancellationToken cancellationToken = default)
         {
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CreateSessionAsync");
             
-            var session = await Client.StartSessionAsync(cancellationToken: cancellationToken);
+            var session = await client.StartSessionAsync(cancellationToken: cancellationToken);
 
             if (_dbContextOptions.Timeout.HasValue)
             {

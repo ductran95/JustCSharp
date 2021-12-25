@@ -5,6 +5,7 @@ namespace JustCSharp.Uow
 {
     public interface ISupportTransaction
     {
+        ITransaction CurrentTransaction { get; }
         bool IsInTransaction();
         Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default);
         void BeginTransaction();
