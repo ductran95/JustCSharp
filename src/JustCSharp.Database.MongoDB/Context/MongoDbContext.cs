@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -10,7 +9,6 @@ using JustCSharp.Core.Logging.Extensions;
 using JustCSharp.Data.Entities;
 using JustCSharp.Database.MongoDB.Attribute;
 using JustCSharp.Database.MongoDB.Model;
-using JustCSharp.Uow;
 using JustCSharp.Uow.UnitOfWork;
 using JustCSharp.Utility.Extensions;
 using JustCSharp.Utility.Helpers;
@@ -220,18 +218,24 @@ namespace JustCSharp.Database.MongoDB.Context
         
         public bool IsInTransaction()
         {
-            return SessionHandle != null;
+            return IsConnected && SessionHandle != null;
         }
 
         public Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(SessionHandle != null);
+            return Task.FromResult(IsConnected && SessionHandle != null);
         }
 
         public void BeginTransaction()
         {
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start BeginTransaction");
+
+            if (!IsConnected)
+            {
+                CheckStateAndConnect();
+                return;
+            }
             
             if (IsInTransaction())
             {
@@ -259,6 +263,12 @@ namespace JustCSharp.Database.MongoDB.Context
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start BeginTransactionAsync");
             
+            if (!IsConnected)
+            {
+                await CheckStateAndConnectAsync(cancellationToken);
+                return;
+            }
+            
             if (await IsInTransactionAsync(cancellationToken))
             {
                 Logger.LogWarning("Transaction already began");
@@ -285,6 +295,12 @@ namespace JustCSharp.Database.MongoDB.Context
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CommitTransaction");
             
+            if (!IsConnected)
+            {
+                Logger.LogWarning("Context has not connected to Database");
+                return;
+            }
+            
             if (!IsInTransaction())
             {
                 Logger.LogWarning("Transaction has not began");
@@ -302,6 +318,12 @@ namespace JustCSharp.Database.MongoDB.Context
         {
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CommitTransactionAsync");
+            
+            if (!IsConnected)
+            {
+                Logger.LogWarning("Context has not connected to Database");
+                return;
+            }
             
             if (!(await IsInTransactionAsync(cancellationToken)))
             {
@@ -321,6 +343,12 @@ namespace JustCSharp.Database.MongoDB.Context
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start RollbackTransaction");
             
+            if (!IsConnected)
+            {
+                Logger.LogWarning("Context has not connected to Database");
+                return;
+            }
+            
             if (!IsInTransaction())
             {
                 Logger.LogWarning("Transaction has not began");
@@ -338,6 +366,12 @@ namespace JustCSharp.Database.MongoDB.Context
         {
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start RollbackTransactionAsync");
+            
+            if (!IsConnected)
+            {
+                Logger.LogWarning("Context has not connected to Database");
+                return;
+            }
             
             if (!(await IsInTransactionAsync(cancellationToken)))
             {
