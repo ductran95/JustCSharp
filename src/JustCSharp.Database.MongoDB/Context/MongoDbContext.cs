@@ -10,6 +10,7 @@ using JustCSharp.Core.Logging.Extensions;
 using JustCSharp.Data.Entities;
 using JustCSharp.Database.MongoDB.Attribute;
 using JustCSharp.Database.MongoDB.Model;
+using JustCSharp.Uow;
 using JustCSharp.Uow.UnitOfWork;
 using JustCSharp.Utility.Extensions;
 using JustCSharp.Utility.Helpers;
@@ -69,6 +70,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         #region Public Functions
 
+        #region IMongoDbContext
+
         public virtual IMongoCollection<T> Collection<T>()
         {
             return Database.GetCollection<T>(GetCollectionName<T>());
@@ -76,6 +79,9 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public void CheckStateAndConnect()
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CheckStateAndConnect");
+            
             if (IsConnected)
             {
                 return;
@@ -94,7 +100,7 @@ namespace JustCSharp.Database.MongoDB.Context
 
                 if (sync.IsInitConnection)
                 {
-                    Logger.LogTrace("sync.IsInitConnection true, context: {id}", _id);
+                    Logger.LogTrace("Sync.IsInitConnection true, context: {id}", _id);
 
                     // Setup as normal
                     var result = CheckStateAndConnectInternal();
@@ -129,10 +135,17 @@ namespace JustCSharp.Database.MongoDB.Context
             }
             
             IsConnected = true;
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End CheckStateAndConnect, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
 
         public async Task CheckStateAndConnectAsync(CancellationToken cancellationToken = default)
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CheckStateAndConnectAsync");
+            
             if (IsConnected)
             {
                 return;
@@ -152,7 +165,7 @@ namespace JustCSharp.Database.MongoDB.Context
 
                 if (sync.IsInitConnection)
                 {
-                    Logger.LogTrace("sync.IsInitConnection true, context: {id}", _id);
+                    Logger.LogTrace("Sync.IsInitConnection true, context: {id}", _id);
 
                     // Setup as normal
                     var result = await CheckStateAndConnectInternalAsync(cancellationToken);
@@ -189,6 +202,154 @@ namespace JustCSharp.Database.MongoDB.Context
             }
             
             IsConnected = true;
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End CheckStateAndConnectAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+        }
+
+        #endregion
+        
+        #region IDatabase
+        
+        #endregion
+        
+        #region ISupportTransaction
+        
+        #endregion
+        
+        public bool IsInTransaction()
+        {
+            return SessionHandle != null;
+        }
+
+        public Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(SessionHandle != null);
+        }
+
+        public void BeginTransaction()
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start BeginTransaction");
+            
+            if (IsInTransaction())
+            {
+                Logger.LogWarning("Transaction already began");
+                return;
+            }
+            
+            var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
+            IClientSessionHandle session = activeTransaction?.SessionHandle;
+
+            if (session == null)
+            {
+                session = CreateSession();
+
+                UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+            }
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End BeginTransaction, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+        }
+
+        public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start BeginTransactionAsync");
+            
+            if (await IsInTransactionAsync(cancellationToken))
+            {
+                Logger.LogWarning("Transaction already began");
+                return;
+            }
+            
+            var activeTransaction = UnitOfWork.FindTransaction(GetType()) as MongoDbTransaction;
+            IClientSessionHandle session = activeTransaction?.SessionHandle;
+
+            if (session == null)
+            {
+                session = await CreateSessionAsync(cancellationToken);
+
+                UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
+            }
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End BeginTransactionAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+        }
+
+        public void CommitTransaction()
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CommitTransaction");
+            
+            if (!IsInTransaction())
+            {
+                Logger.LogWarning("Transaction has not began");
+                return;
+            }
+            
+            SessionHandle.CommitTransaction();
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End CommitTransaction, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+        }
+
+        public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CommitTransactionAsync");
+            
+            if (!(await IsInTransactionAsync(cancellationToken)))
+            {
+                Logger.LogWarning("Transaction has not began");
+                return;
+            }
+            
+            await SessionHandle.CommitTransactionAsync(cancellationToken);
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End CommitTransactionAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+        }
+
+        public void RollbackTransaction()
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start RollbackTransaction");
+            
+            if (!IsInTransaction())
+            {
+                Logger.LogWarning("Transaction has not began");
+                return;
+            }
+            
+            SessionHandle.AbortTransaction();
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End RollbackTransaction, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+        }
+
+        public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start RollbackTransactionAsync");
+            
+            if (!(await IsInTransactionAsync(cancellationToken)))
+            {
+                Logger.LogWarning("Transaction has not began");
+                return;
+            }
+            
+            await SessionHandle.AbortTransactionAsync(cancellationToken);
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End RollbackTransactionAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
 
         #endregion
@@ -197,6 +358,9 @@ namespace JustCSharp.Database.MongoDB.Context
         
         protected virtual void InitializeCollections()
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start InitializeCollections");
+            
             var entityModels = InitializeCollectionsInternal();
 
             foreach (var entityModel in entityModels.Values)
@@ -214,10 +378,17 @@ namespace JustCSharp.Database.MongoDB.Context
             }
 
             EntityModels = entityModels;
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End InitializeCollections, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
 
         protected virtual async Task InitializeCollectionsAsync(CancellationToken cancellationToken = default)
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start InitializeCollectionsAsync");
+            
             var entityModels = InitializeCollectionsInternal();
 
             foreach (var entityModel in entityModels.Values)
@@ -235,6 +406,10 @@ namespace JustCSharp.Database.MongoDB.Context
             }
 
             EntityModels = entityModels;
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End InitializeCollectionsAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
 
         protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
@@ -266,53 +441,27 @@ namespace JustCSharp.Database.MongoDB.Context
 
         protected virtual void CreateCollectionIfNotExists(string collectionName)
         {
-            Stopwatch stopwatch = null;
-            TimeSpan elapsedTime = TimeSpan.Zero;
-            if (Logger.IsEnabled(LogLevel.Trace))
-            {
-                stopwatch = Stopwatch.StartNew();
-            }
-
-            Logger.LogTrace("Start CreateCollectionIfNotExists with collection name {collectionName}", collectionName);
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation("Start CreateCollectionIfNotExists with collection name {collectionName}", collectionName);
 
             var filter = new BsonDocument("name", collectionName);
             var options = new ListCollectionNamesOptions { Filter = filter };
 
             if (!Database.ListCollectionNames(options).Any())
             {
-                stopwatch?.Stop();
-                if (Logger.IsEnabled(LogLevel.Trace))
-                {
-                    elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
-                }
-
-                stopwatch?.Restart();
-
                 Database.CreateCollection(collectionName);
-
-                Logger.LogTrace("CreateCollection takes {time}", stopwatch?.Elapsed);
             }
 
             stopwatch?.Stop();
-            if (Logger.IsEnabled(LogLevel.Trace))
-            {
-                elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
-            }
-
-            Logger.LogTrace("End CreateCollectionIfNotExists, elapsed time {time}", elapsedTime);
+            Logger.LogInformation("End CreateCollectionIfNotExists, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
 
         protected virtual async Task CreateCollectionIfNotExistsAsync(string collectionName,
             CancellationToken cancellationToken = default)
         {
-            Stopwatch stopwatch = null;
-            TimeSpan elapsedTime = TimeSpan.Zero;
-            if (Logger.IsEnabled(LogLevel.Trace))
-            {
-                stopwatch = Stopwatch.StartNew();
-            }
-
-            Logger.LogTrace("Start CreateCollectionIfNotExistsAsync with collection name {collectionName}",
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation("Start CreateCollectionIfNotExistsAsync with collection name {collectionName}",
                 collectionName);
 
             var filter = new BsonDocument("name", collectionName);
@@ -322,26 +471,12 @@ namespace JustCSharp.Database.MongoDB.Context
 
             if (!await result.AnyAsync(cancellationToken: cancellationToken))
             {
-                stopwatch?.Stop();
-                if (Logger.IsEnabled(LogLevel.Trace))
-                {
-                    elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
-                }
-
-                stopwatch?.Restart();
-
                 await Database.CreateCollectionAsync(collectionName, cancellationToken: cancellationToken);
-
-                Logger.LogTrace("CreateCollectionAsync takes {time}", stopwatch?.Elapsed);
             }
 
             stopwatch?.Stop();
-            if (Logger.IsEnabled(LogLevel.Trace))
-            {
-                elapsedTime = elapsedTime.Add(stopwatch?.Elapsed ?? TimeSpan.Zero);
-            }
-
-            Logger.LogTrace("End CreateCollectionIfNotExistsAsync, elapsed time {time}", elapsedTime);
+            Logger.LogInformation("End CreateCollectionIfNotExistsAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
 
         protected virtual string GetCollectionName<T>()
@@ -368,16 +503,26 @@ namespace JustCSharp.Database.MongoDB.Context
         
         private void ResolveConfig()
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start ResolveConfig");
+            
             MongoUrl = new MongoUrl(_dbContextOptions.ConnectionString);
             DatabaseName = MongoUrl.DatabaseName;
             if (string.IsNullOrWhiteSpace(DatabaseName))
             {
                 DatabaseName = !string.IsNullOrWhiteSpace(_dbContextOptions.DatabaseName) ? _dbContextOptions.DatabaseName : _dbContextOptions.ConnectionStringName;
             }
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End ResolveConfig, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
         
         private void AddToUow()
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start AddToUow");
+            
             if (UnitOfWork != null)
             {
                 var existedDatabase = UnitOfWork.FindDatabase(GetType());
@@ -387,20 +532,19 @@ namespace JustCSharp.Database.MongoDB.Context
                 }
                 else
                 {
-                    UnitOfWork.GetOrAddDatabase(GetType(), () => new MongoDbDatabase(this));
+                    UnitOfWork.GetOrAddDatabase(GetType(), () => this);
                 }
             }
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End AddToUow, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
         
         private Dictionary<Type, IMongoEntityModel> InitializeCollectionsInternal()
         {
-            Stopwatch stopwatch = null;
-            if (Logger.IsEnabled(LogLevel.Trace))
-            {
-                stopwatch = Stopwatch.StartNew();
-            }
-
-            Logger.LogTrace($"Start InitializeCollectionsInternal");
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start InitializeCollectionsInternal");
 
             var modelBuilder = new MongoModelBuilder();
 
@@ -430,7 +574,8 @@ namespace JustCSharp.Database.MongoDB.Context
                 .ToDictionary(x => x.EntityType, x => x);
 
             stopwatch?.Stop();
-            Logger.LogTrace("End InitializeCollectionsAsync, elapsed time {time}", stopwatch?.Elapsed);
+            Logger.LogInformation("End InitializeCollectionsInternal, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
 
             return entityModels;
         }
@@ -438,8 +583,8 @@ namespace JustCSharp.Database.MongoDB.Context
         private (MongoClient Client, IMongoDatabase Database, IClientSessionHandle Session)
             CheckStateAndConnectInternal()
         {
-            Stopwatch stopwatch = null;
-            Logger.LogTrace($"Start CheckStateAndConnectInternal");
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CheckStateAndConnectInternal");
 
             var client = new MongoClient(_dbContextOptions.Settings);
             var database = client.GetDatabase(DatabaseName);
@@ -454,31 +599,15 @@ namespace JustCSharp.Database.MongoDB.Context
 
                 if (session == null)
                 {
-                    if (Logger.IsEnabled(LogLevel.Trace))
-                    {
-                        stopwatch = Stopwatch.StartNew();
-                    }
-
-                    Logger.LogTrace($"Start StartSession");
-
-                    session = Client.StartSession();
-
-                    stopwatch?.Stop();
-                    Logger.LogTrace("End StartSession, elapsed time {elapsedTime}", stopwatch?.Elapsed);
-
-                    if (_dbContextOptions.Timeout.HasValue)
-                    {
-                        session.AdvanceOperationTime(new BsonTimestamp(_dbContextOptions.Timeout.Value));
-                    }
-
-                    session.StartTransaction();
+                    session = CreateSession();
 
                     UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
                 }
             }
-
+            
             stopwatch?.Stop();
-            Logger.LogTrace("End CheckStateAndConnectInternal");
+            Logger.LogInformation("End CheckStateAndConnectInternal, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
 
             return (client, database, session);
         }
@@ -486,8 +615,8 @@ namespace JustCSharp.Database.MongoDB.Context
         private async Task<(MongoClient Client, IMongoDatabase Database, IClientSessionHandle Session)>
             CheckStateAndConnectInternalAsync(CancellationToken cancellationToken = default)
         {
-            Stopwatch stopwatch = null;
-            Logger.LogTrace($"Start CheckStateAndConnectInternalAsync");
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CheckStateAndConnectInternalAsync");
 
             var client = new MongoClient(_dbContextOptions.Settings);
             var database = client.GetDatabase(DatabaseName);
@@ -502,37 +631,24 @@ namespace JustCSharp.Database.MongoDB.Context
 
                 if (session == null)
                 {
-                    if (Logger.IsEnabled(LogLevel.Trace))
-                    {
-                        stopwatch = Stopwatch.StartNew();
-                    }
-
-                    Logger.LogTrace($"Start StartSessionAsync");
-
-                    session = await Client.StartSessionAsync(cancellationToken: cancellationToken);
-
-                    stopwatch?.Stop();
-                    Logger.LogTrace("End StartSessionAsync, elapsed time {elapsedTime}", stopwatch?.Elapsed);
-
-                    if (_dbContextOptions.Timeout.HasValue)
-                    {
-                        session.AdvanceOperationTime(new BsonTimestamp(_dbContextOptions.Timeout.Value));
-                    }
-
-                    session.StartTransaction();
+                    session = await CreateSessionAsync(cancellationToken);
 
                     UnitOfWork.GetOrAddTransaction(this.GetType(), () => new MongoDbTransaction(session));
                 }
             }
 
             stopwatch?.Stop();
-            Logger.LogTrace("End CheckStateAndConnectInternalAsync");
+            Logger.LogInformation("End CheckStateAndConnectInternalAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
 
             return (client, database, session);
         }
 
         private void InitializeDatabaseWithCache(MongoClient client, IMongoDatabase database, IClientSessionHandle session)
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start InitializeDatabaseWithCache");
+            
             var modelCache = EntityModelCache.DbModelCache.GetOrDefault(this.GetType());
             if (modelCache == null)
             {
@@ -543,10 +659,17 @@ namespace JustCSharp.Database.MongoDB.Context
             {
                 InitializeDatabase(database, client, session, modelCache);
             }
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End InitializeDatabaseWithCache, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
         
         private async Task InitializeDatabaseWithCacheAsync(MongoClient client, IMongoDatabase database, IClientSessionHandle session, CancellationToken cancellationToken = default)
         {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start InitializeDatabaseWithCacheAsync");
+            
             var modelCache = EntityModelCache.DbModelCache.GetOrDefault(this.GetType());
             if (modelCache == null)
             {
@@ -558,8 +681,53 @@ namespace JustCSharp.Database.MongoDB.Context
             {
                 InitializeDatabase(database, client, session, modelCache);
             }
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End InitializeDatabaseWithCacheAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
         }
 
+        private IClientSessionHandle CreateSession()
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CreateSession");
+            
+            var session = Client.StartSession();
+
+            if (_dbContextOptions.Timeout.HasValue)
+            {
+                session.AdvanceOperationTime(new BsonTimestamp(_dbContextOptions.Timeout.Value));
+            }
+
+            session.StartTransaction();
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End CreateSession, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+
+            return session;
+        }
+        
+        private async Task<IClientSessionHandle> CreateSessionAsync(CancellationToken cancellationToken = default)
+        {
+            var stopwatch = Logger.StartStopwatch();
+            Logger.LogInformation($"Start CreateSessionAsync");
+            
+            var session = await Client.StartSessionAsync(cancellationToken: cancellationToken);
+
+            if (_dbContextOptions.Timeout.HasValue)
+            {
+                session.AdvanceOperationTime(new BsonTimestamp(_dbContextOptions.Timeout.Value));
+            }
+
+            session.StartTransaction();
+            
+            stopwatch?.Stop();
+            Logger.LogInformation("End CreateSessionAsync, elapsed time: {elapsedTime}", Logger.GetElapsedTime(stopwatch));
+            stopwatch = null;
+
+            return session;
+        }
         #endregion
     }
 }

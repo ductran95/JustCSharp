@@ -126,39 +126,39 @@ namespace JustCSharp.Uow.UnitOfWork
             return true;
         }
 
-        public virtual void Begin()
+        public virtual void BeginTransaction()
         {
-            this.IsTransactional = true;
+            IsTransactional = true;
             foreach (var databaseApi in GetAllActiveDatabases())
             {
                 if (databaseApi is ISupportTransaction)
                 {
                     try
                     {
-                        (databaseApi as ISupportTransaction).Begin();
+                        (databaseApi as ISupportTransaction).BeginTransaction();
                     }
                     catch { }
                 }
             }
         }
 
-        public virtual async Task BeginAsync(CancellationToken cancellationToken = default)
+        public virtual async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
-            this.IsTransactional = true;
+            IsTransactional = true;
             foreach (var databaseApi in GetAllActiveDatabases())
             {
                 if (databaseApi is ISupportTransaction)
                 {
                     try
                     {
-                        await (databaseApi as ISupportTransaction).BeginAsync(cancellationToken);
+                        await (databaseApi as ISupportTransaction).BeginTransactionAsync(cancellationToken);
                     }
                     catch { }
                 }
             }
         }
 
-        public virtual void Commit()
+        public virtual void CommitTransaction()
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -166,14 +166,14 @@ namespace JustCSharp.Uow.UnitOfWork
                 {
                     try
                     {
-                        (databaseApi as ISupportTransaction).Commit();
+                        (databaseApi as ISupportTransaction).CommitTransaction();
                     }
                     catch { }
                 }
             }
         }
 
-        public virtual async Task CommitAsync(CancellationToken cancellationToken = default)
+        public virtual async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -181,14 +181,14 @@ namespace JustCSharp.Uow.UnitOfWork
                 {
                     try
                     {
-                        await (databaseApi as ISupportTransaction).CommitAsync(cancellationToken);
+                        await (databaseApi as ISupportTransaction).CommitTransactionAsync(cancellationToken);
                     }
                     catch { }
                 }
             }
         }
 
-        public virtual void Rollback()
+        public virtual void RollbackTransaction()
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -196,14 +196,14 @@ namespace JustCSharp.Uow.UnitOfWork
                 {
                     try
                     {
-                        (databaseApi as ISupportTransaction).Rollback();
+                        (databaseApi as ISupportTransaction).RollbackTransaction();
                     }
                     catch { }
                 }
             }
         }
 
-        public virtual async Task RollbackAsync(CancellationToken cancellationToken = default)
+        public virtual async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
             foreach (var databaseApi in GetAllActiveDatabases())
             {
@@ -211,7 +211,7 @@ namespace JustCSharp.Uow.UnitOfWork
                 {
                     try
                     {
-                        await (databaseApi as ISupportTransaction).RollbackAsync(cancellationToken);
+                        await (databaseApi as ISupportTransaction).RollbackTransactionAsync(cancellationToken);
                     }
                     catch { }
                 }

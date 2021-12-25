@@ -7,11 +7,11 @@ namespace JustCSharp.Uow
     {
         bool IsInTransaction();
         Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default);
-        void Begin();
-        Task BeginAsync(CancellationToken cancellationToken = default);
-        void Commit();
-        Task CommitAsync(CancellationToken cancellationToken = default);
-        void Rollback();
-        Task RollbackAsync(CancellationToken cancellationToken = default);
+        void BeginTransaction();
+        Task BeginTransactionAsync(CancellationToken cancellationToken = default);
+        void CommitTransaction();
+        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
+        void RollbackTransaction();
+        Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
     }
 }
