@@ -127,7 +127,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
         public TEntity Find(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
         {
             var query = GetMongoQueryable();
-            return IAsyncCursorSourceExtensions.SingleOrDefault<TEntity>(query
+            return IAsyncCursorSourceExtensions.FirstOrDefault(query
                     .Where(predicate));
         }
 
@@ -135,13 +135,13 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             var query = await GetMongoQueryableAsync(cancellationToken);
             return await MongoQueryable.Where(query, predicate)
-                .SingleOrDefaultAsync(cancellationToken);
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public List<TEntity> GetList(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
         {
             var query = GetMongoQueryable();
-            return IAsyncCursorSourceExtensions.ToList<TEntity>(query
+            return IAsyncCursorSourceExtensions.ToList(query
                     .Where(predicate));
         }
 
