@@ -10,11 +10,11 @@ namespace JustCSharp.Authentication
         Task<IAuthContext> GetAuthContextAsync(CancellationToken cancellationToken = default);
     }
     
-    public interface IAuthContextProviderOfT<TAuthContext>: IAuthContextProvider 
+    public interface IAuthContextProvider<TAuthContext>: IAuthContextProvider 
         where TAuthContext: class, IAuthContext
     {
-        TAuthContext AuthContextOfT { get; }
-        TAuthContext GetAuthContextOfT();
-        Task<TAuthContext> GetTAuthContextOfTAsync(CancellationToken cancellationToken = default);
+        new TAuthContext AuthContext { get; }
+        new TAuthContext GetAuthContext();
+        new Task<TAuthContext> GetAuthContextAsync(CancellationToken cancellationToken = default);
     }
 }

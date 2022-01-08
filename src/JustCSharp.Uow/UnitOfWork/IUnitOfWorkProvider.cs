@@ -10,11 +10,11 @@ namespace JustCSharp.Uow.UnitOfWork
         Task<IUnitOfWork> GetUnitOfWorkAsync(CancellationToken cancellationToken = default);
     }
     
-    public interface IUnitOfWorkProviderOfT<TUnitOfWork>: IUnitOfWorkProvider 
+    public interface IUnitOfWorkProvider<TUnitOfWork>: IUnitOfWorkProvider 
         where TUnitOfWork: class, IUnitOfWork
     {
-        TUnitOfWork UnitOfWorkOfT { get; }
-        TUnitOfWork GetUnitOfWorkOfT();
-        Task<TUnitOfWork> GetUnitOfWorkOfTAsync(CancellationToken cancellationToken = default);
+        new TUnitOfWork UnitOfWork { get; }
+        new TUnitOfWork GetUnitOfWork();
+        new Task<TUnitOfWork> GetUnitOfWorkAsync(CancellationToken cancellationToken = default);
     }
 }

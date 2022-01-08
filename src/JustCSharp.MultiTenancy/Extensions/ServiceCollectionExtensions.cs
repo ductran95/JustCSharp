@@ -7,13 +7,13 @@ namespace JustCSharp.MultiTenancy.Extensions
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddJustCSharpTenantContext<TTenantContext, TTenantContextProvider>(this IServiceCollection serviceCollection) 
-            where TTenantContext: class, ITenantContext where TTenantContextProvider: class, ITenantContextProviderOfT<TTenantContext>
+            where TTenantContext: class, ITenantContext where TTenantContextProvider: class, ITenantContextProvider<TTenantContext>
         {
             AddJustCSharpTenantContextCore(serviceCollection);
             
-            serviceCollection.TryAddScoped<ITenantContextProviderOfT<TTenantContext>, TTenantContextProvider>();
-            serviceCollection.TryAddScoped<ITenantContextProvider>(sp => sp.GetRequiredService<ITenantContextProviderOfT<TTenantContext>>());
-            serviceCollection.TryAddScoped<TTenantContext>(sp => sp.GetRequiredService<ITenantContextProviderOfT<TTenantContext>>().TenantContextOfT);
+            serviceCollection.TryAddScoped<ITenantContextProvider<TTenantContext>, TTenantContextProvider>();
+            serviceCollection.TryAddScoped<ITenantContextProvider>(sp => sp.GetRequiredService<ITenantContextProvider<TTenantContext>>());
+            serviceCollection.TryAddScoped<TTenantContext>(sp => sp.GetRequiredService<ITenantContextProvider<TTenantContext>>().TenantContext);
             
             return serviceCollection;
         }

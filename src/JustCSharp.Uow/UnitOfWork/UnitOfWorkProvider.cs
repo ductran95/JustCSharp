@@ -52,34 +52,25 @@ namespace JustCSharp.Uow.UnitOfWork
         }
     }
 
-    public abstract class UnitOfWorkProviderOfT<TUnitOfWork> : IUnitOfWorkProviderOfT<TUnitOfWork>
+    public abstract class UnitOfWorkProvider<TUnitOfWork> : IUnitOfWorkProvider<TUnitOfWork>
         where TUnitOfWork : class, IUnitOfWork
     {
         protected readonly ILazyServiceProvider _serviceProvider;
 
         protected TUnitOfWork _unitOfWork;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProviderOfT<>));
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProvider<>));
 
-        protected UnitOfWorkProviderOfT(ILazyServiceProvider serviceProvider)
+        protected UnitOfWorkProvider(ILazyServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public IUnitOfWork UnitOfWork => GetUnitOfWork();
-        public TUnitOfWork UnitOfWorkOfT => GetUnitOfWorkOfT();
-        
-        public virtual IUnitOfWork GetUnitOfWork()
-        {
-            return GetUnitOfWorkOfT();
-        }
+        public TUnitOfWork UnitOfWork => GetUnitOfWork();
 
-        public virtual async Task<IUnitOfWork> GetUnitOfWorkAsync(CancellationToken cancellationToken = default)
-        {
-            return await GetUnitOfWorkOfTAsync(cancellationToken);
-        }
-        
-        public virtual TUnitOfWork GetUnitOfWorkOfT()
+        IUnitOfWork IUnitOfWorkProvider.UnitOfWork => UnitOfWork;
+
+        public TUnitOfWork GetUnitOfWork()
         {
             if (_unitOfWork == null)
             {
@@ -89,7 +80,7 @@ namespace JustCSharp.Uow.UnitOfWork
             return _unitOfWork;
         }
 
-        public virtual async Task<TUnitOfWork> GetUnitOfWorkOfTAsync(CancellationToken cancellationToken = default)
+        public async Task<TUnitOfWork> GetUnitOfWorkAsync(CancellationToken cancellationToken)
         {
             if (_unitOfWork == null)
             {
@@ -99,7 +90,18 @@ namespace JustCSharp.Uow.UnitOfWork
             return _unitOfWork;
         }
 
+        IUnitOfWork IUnitOfWorkProvider.GetUnitOfWork()
+        {
+            return GetUnitOfWork();
+        }
+
+        async Task<IUnitOfWork> IUnitOfWorkProvider.GetUnitOfWorkAsync(CancellationToken cancellationToken)
+        {
+            return await GetUnitOfWorkAsync(cancellationToken);
+        }
+
         protected abstract TUnitOfWork CreateUnitOfWork();
+
         protected abstract Task<TUnitOfWork> CreateUnitOfWorkAsync(CancellationToken cancellationToken = default);
     }
 }

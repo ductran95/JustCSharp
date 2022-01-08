@@ -7,13 +7,13 @@ namespace JustCSharp.Authentication.Extensions
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddJustCSharpAuthContext<TAuthContext, TAuthContextProvider>(this IServiceCollection serviceCollection) 
-            where TAuthContext: class, IAuthContext where TAuthContextProvider: class, IAuthContextProviderOfT<TAuthContext>
+            where TAuthContext: class, IAuthContext where TAuthContextProvider: class, IAuthContextProvider<TAuthContext>
         {
             AddJustCSharpAuthContextCore(serviceCollection);
             
-            serviceCollection.TryAddScoped<IAuthContextProviderOfT<TAuthContext>, TAuthContextProvider>();
-            serviceCollection.TryAddScoped<IAuthContextProvider>(sp => sp.GetRequiredService<IAuthContextProviderOfT<TAuthContext>>());
-            serviceCollection.TryAddScoped<TAuthContext>(sp => sp.GetRequiredService<IAuthContextProviderOfT<TAuthContext>>().AuthContextOfT);
+            serviceCollection.TryAddScoped<IAuthContextProvider<TAuthContext>, TAuthContextProvider>();
+            serviceCollection.TryAddScoped<IAuthContextProvider>(sp => sp.GetRequiredService<IAuthContextProvider<TAuthContext>>());
+            serviceCollection.TryAddScoped<TAuthContext>(sp => sp.GetRequiredService<IAuthContextProvider<TAuthContext>>().AuthContext);
             
             return serviceCollection;
         }

@@ -8,12 +8,12 @@ namespace JustCSharp.Uow.Extensions
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddJustCSharpUow<TUnitOfWork, TUnitOfWorkProvider>(this IServiceCollection serviceCollection)
-            where TUnitOfWork: class, IUnitOfWork where TUnitOfWorkProvider: class, IUnitOfWorkProviderOfT<TUnitOfWork>
+            where TUnitOfWork: class, IUnitOfWork where TUnitOfWorkProvider: class, IUnitOfWorkProvider<TUnitOfWork>
         {
             AddJustCSharpUow<TUnitOfWorkProvider>(serviceCollection);
             
-            serviceCollection.TryAddScoped<IUnitOfWorkProviderOfT<TUnitOfWork>, TUnitOfWorkProvider>();
-            serviceCollection.TryAddScoped<TUnitOfWork>(sp => sp.GetRequiredService<IUnitOfWorkProviderOfT<TUnitOfWork>>().UnitOfWorkOfT);
+            serviceCollection.TryAddScoped<IUnitOfWorkProvider<TUnitOfWork>, TUnitOfWorkProvider>();
+            serviceCollection.TryAddScoped<TUnitOfWork>(sp => sp.GetRequiredService<IUnitOfWorkProvider<TUnitOfWork>>().UnitOfWork);
             
             return serviceCollection;
         }

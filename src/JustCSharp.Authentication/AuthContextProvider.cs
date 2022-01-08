@@ -1,11 +1,8 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Core.DependencyInjection;
 using JustCSharp.Core.Logging.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JustCSharp.Authentication
 {
@@ -53,34 +50,35 @@ namespace JustCSharp.Authentication
         }
     }
 
-    public abstract class AuthContextProviderOfT<TAuthContext>: IAuthContextProviderOfT<TAuthContext> 
+    public abstract class AuthContextProvider<TAuthContext>: IAuthContextProvider<TAuthContext> 
         where TAuthContext: class, IAuthContext
     {
         protected readonly ILazyServiceProvider _serviceProvider;
         
         protected TAuthContext _authContext;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(AuthContextProviderOfT<>));
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(AuthContextProvider<>));
 
-        protected AuthContextProviderOfT(ILazyServiceProvider serviceProvider)
+        protected AuthContextProvider(ILazyServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public IAuthContext AuthContext => GetAuthContext();
-        public TAuthContext AuthContextOfT => GetAuthContextOfT();
+        IAuthContext IAuthContextProvider.AuthContext => AuthContext;
+
+        public TAuthContext AuthContext => GetAuthContext();
+
+        IAuthContext IAuthContextProvider.GetAuthContext()
+        {
+            return GetAuthContext();
+        }
         
-        public virtual IAuthContext GetAuthContext()
+        async Task<IAuthContext> IAuthContextProvider.GetAuthContextAsync(CancellationToken cancellationToken)
         {
-            return GetAuthContextOfT();
+            return await GetAuthContextAsync(cancellationToken);
         }
 
-        public virtual async Task<IAuthContext> GetAuthContextAsync(CancellationToken cancellationToken = default)
-        {
-            return await GetTAuthContextOfTAsync(cancellationToken);
-        }
-
-        public virtual TAuthContext GetAuthContextOfT()
+        public TAuthContext GetAuthContext()
         {
             if (_authContext == null)
             {
@@ -88,8 +86,8 @@ namespace JustCSharp.Authentication
             }
             return _authContext;
         }
-
-        public virtual async Task<TAuthContext> GetTAuthContextOfTAsync(CancellationToken cancellationToken = default)
+        
+        public async Task<TAuthContext> GetAuthContextAsync(CancellationToken cancellationToken)
         {
             if (_authContext == null)
             {
@@ -100,6 +98,7 @@ namespace JustCSharp.Authentication
 
         protected abstract TAuthContext CreateAuthContext();
 
-        protected abstract Task<TAuthContext> CreateAuthContextAsync(CancellationToken cancellationToken = default);
+        protected abstract Task<TAuthContext> CreateAuthContextAsync(
+            CancellationToken cancellationToken = default);
     }
 }

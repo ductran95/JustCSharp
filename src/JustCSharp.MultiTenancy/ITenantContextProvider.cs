@@ -10,11 +10,11 @@ namespace JustCSharp.MultiTenancy
         Task<ITenantContext> GetTenantContextAsync(CancellationToken cancellationToken = default);
     }
     
-    public interface ITenantContextProviderOfT<TTenantContext>: ITenantContextProvider 
+    public interface ITenantContextProvider<TTenantContext>: ITenantContextProvider 
         where TTenantContext: class, ITenantContext
     {
-        TTenantContext TenantContextOfT { get; }
-        TTenantContext GetTenantContextOfT();
-        Task<TTenantContext> GetTenantContextOfTAsync(CancellationToken cancellationToken = default);
+        new TTenantContext TenantContext { get; }
+        new TTenantContext GetTenantContext();
+        new Task<TTenantContext> GetTenantContextAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -50,34 +50,25 @@ namespace JustCSharp.MultiTenancy
         }
     }
 
-    public abstract class TenantContextProviderOfT<TTenantContext>: ITenantContextProviderOfT<TTenantContext> 
+    public abstract class TenantContextProvider<TTenantContext>: ITenantContextProvider<TTenantContext> 
         where TTenantContext: class, ITenantContext
     {
         protected readonly ILazyServiceProvider _serviceProvider;
         
         protected TTenantContext _tenantContext;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(TenantContextProviderOfT<>));
+        private ILogger Logger => _serviceProvider.GetLogger(typeof(TenantContextProvider<>));
 
-        protected TenantContextProviderOfT(ILazyServiceProvider serviceProvider)
+        protected TenantContextProvider(ILazyServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public ITenantContext TenantContext => GetTenantContext();
-        public TTenantContext TenantContextOfT => GetTenantContextOfT();
-        
-        public virtual ITenantContext GetTenantContext()
-        {
-            return GetTenantContextOfT();
-        }
+        public TTenantContext TenantContext => GetTenantContext();
 
-        public virtual async Task<ITenantContext> GetTenantContextAsync(CancellationToken cancellationToken = default)
-        {
-            return await GetTenantContextOfTAsync(cancellationToken);
-        }
+        ITenantContext ITenantContextProvider.TenantContext => TenantContext;
 
-        public virtual TTenantContext GetTenantContextOfT()
+        public TTenantContext GetTenantContext()
         {
             if (_tenantContext == null)
             {
@@ -85,14 +76,24 @@ namespace JustCSharp.MultiTenancy
             }
             return _tenantContext;
         }
-
-        public virtual async Task<TTenantContext> GetTenantContextOfTAsync(CancellationToken cancellationToken = default)
+        
+        public async Task<TTenantContext> GetTenantContextAsync(CancellationToken cancellationToken)
         {
             if (_tenantContext == null)
             {
                 _tenantContext = await CreateTenantContextAsync(cancellationToken);
             }
             return _tenantContext;
+        }
+        
+        ITenantContext ITenantContextProvider.GetTenantContext()
+        {
+            return GetTenantContext();
+        }
+
+        async Task<ITenantContext> ITenantContextProvider.GetTenantContextAsync(CancellationToken cancellationToken)
+        {
+            return await GetTenantContextAsync(cancellationToken);
         }
 
         protected abstract TTenantContext CreateTenantContext();
