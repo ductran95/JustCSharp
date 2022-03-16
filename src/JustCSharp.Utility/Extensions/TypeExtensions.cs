@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using JustCSharp.Data.Constants;
 
 namespace JustCSharp.Utility.Extensions
@@ -63,6 +65,23 @@ namespace JustCSharp.Utility.Extensions
             var isImplementIEnumerable = !type.Equals(typeof(string)) && type.GetInterfaces()
                 .Any(x => x.IsGenericType && x.GetInterfaces().Contains(typeof(IEnumerable)));
             return isImplementIEnumerable;
+        }
+        
+        public static IEnumerable<TypeInfo> GetConstructibleTypes(this Assembly assembly)
+            => assembly.GetLoadableDefinedTypes().Where(
+                t => !t.IsAbstract
+                     && !t.IsGenericTypeDefinition);
+        
+        public static IEnumerable<TypeInfo> GetLoadableDefinedTypes(this Assembly assembly)
+        {
+            try
+            {
+                return assembly.DefinedTypes;
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                return ex.Types.Where(t => t != null).Select(IntrospectionExtensions.GetTypeInfo!);
+            }
         }
     }
 }
