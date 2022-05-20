@@ -42,7 +42,7 @@ namespace JustCSharp.Database.MongoDB.Model
         
         public virtual MongoModelBuilder ApplyConfigurationsFromAssembly(
             Assembly assembly,
-            Func<Type, bool>? predicate = null)
+            Func<Type, bool> predicate = null)
         {
             var applyEntityConfigurationMethod = typeof(MongoModelBuilder)
                 .GetMethods()

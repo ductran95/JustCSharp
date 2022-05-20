@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using JustCSharp.Data;
 using JustCSharp.Data.Constants;
+using JustCSharp.Data.Resources;
 
 namespace JustCSharp.Core.Exceptions
 {
