@@ -7,7 +7,7 @@ namespace JustCSharp.Utility.Extensions
     {
         public static object ToObject(this JsonElement element, Type type)
         {
-            object result = null;
+            object result;
 
             var nonNullType = Nullable.GetUnderlyingType(type);
             if (nonNullType != null)
