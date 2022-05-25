@@ -11,13 +11,9 @@ namespace JustCSharp.Core.Exceptions
         public string DataType { get; private set; }
         public object DataId { get; private set; }
 
-        public NotFoundException(object dataId, string message = "", Exception innerException = null) : base(message, innerException)
+        public NotFoundException(object dataId, string dataType = "",  string message = "", Exception innerException = null) : base(message, innerException)
         {
             DataId = dataId;
-        }
-        
-        public NotFoundException(object dataId, string dataType, string message = "", Exception innerException = null) : this(dataId, message, innerException)
-        {
             DataType = dataType;
         }
 

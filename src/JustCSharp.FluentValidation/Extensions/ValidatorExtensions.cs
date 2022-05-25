@@ -129,5 +129,17 @@ namespace JustCSharp.FluentValidation.Extensions
         {
             return new Error(validationFailure.PropertyName, validationFailure.ErrorMessage);
         }
+
+        public static BadRequestException ReturnBadRequestException(
+            this IEnumerable<ValidationFailure> validationFailures, string message = "", Exception innerException = null)
+        {
+            return new BadRequestException(validationFailures?.Select(ToError), message, innerException);
+        }
+        
+        public static BadRequestException ReturnBadRequestException(
+            this ValidationFailure validationFailure, string message = "", Exception innerException = null)
+        {
+            return new BadRequestException(validationFailure?.ToError(), message, innerException);
+        }
     }
 }

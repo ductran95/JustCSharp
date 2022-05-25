@@ -14,19 +14,6 @@ namespace JustCSharp.Core.Exceptions
         {
         }
 
-        // public BadRequestException(IEnumerable<ValidationFailure> validationFailures, string message = "", Exception innerException = null) : this(message, innerException)
-        // {
-        //     Errors = validationFailures?.Select(x=>ToError(x));
-        // }
-        //
-        // public BadRequestException(ValidationFailure validationFailure, string message = "", Exception innerException = null) : this(message, innerException)
-        // {
-        //     Errors = new List<Error>()
-        //     {
-        //         ToError(validationFailure)
-        //     };
-        // }
-
         public BadRequestException(IEnumerable<Error> errors, string message = "", Exception innerException = null) : this(message, innerException)
         {
             Errors = errors;
