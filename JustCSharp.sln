@@ -18,6 +18,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.FluentValidation
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.MultiTenancy", "src\JustCSharp.MultiTenancy\JustCSharp.MultiTenancy.csproj", "{EC6EEE6B-7E2E-40E2-BCC1-4528869394D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Api.Swashbuckle", "src\JustCSharp.Api.Swashbuckle\JustCSharp.Api.Swashbuckle.csproj", "{77C1B6B3-E1F2-47AD-92DC-E637C4088325}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.Api.FluentValidation", "src\JustCSharp.Api.FluentValidation\JustCSharp.Api.FluentValidation.csproj", "{53A8E097-166D-41B3-9B77-2C8AF4EC721B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +64,13 @@ Global
 		{EC6EEE6B-7E2E-40E2-BCC1-4528869394D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC6EEE6B-7E2E-40E2-BCC1-4528869394D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC6EEE6B-7E2E-40E2-BCC1-4528869394D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77C1B6B3-E1F2-47AD-92DC-E637C4088325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77C1B6B3-E1F2-47AD-92DC-E637C4088325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77C1B6B3-E1F2-47AD-92DC-E637C4088325}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77C1B6B3-E1F2-47AD-92DC-E637C4088325}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53A8E097-166D-41B3-9B77-2C8AF4EC721B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53A8E097-166D-41B3-9B77-2C8AF4EC721B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53A8E097-166D-41B3-9B77-2C8AF4EC721B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53A8E097-166D-41B3-9B77-2C8AF4EC721B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
