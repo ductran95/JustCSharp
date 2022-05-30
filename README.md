@@ -24,3 +24,9 @@
 
 - JustCSharp.FluentValidation: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.FluentValidation)
 ![Nuget](https://img.shields.io/nuget/dt/JustCSharp.FluentValidation)
+
+- JustCSharp.AspNetCore.FluentValidation: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.AspNetCore.FluentValidation)
+  ![Nuget](https://img.shields.io/nuget/dt/JustCSharp.AspNetCore.FluentValidation)
+
+- JustCSharp.AspNetCore.Swashbuckle: ![Nuget](https://img.shields.io/nuget/v/JustCSharp.AspNetCore.Swashbuckle)
+  ![Nuget](https://img.shields.io/nuget/dt/JustCSharp.AspNetCore.Swashbuckle)

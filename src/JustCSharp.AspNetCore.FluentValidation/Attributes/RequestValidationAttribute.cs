@@ -5,7 +5,7 @@ using JustCSharp.Core.Exceptions;
 using JustCSharp.FluentValidation.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace JustCSharp.Api.FluentValidation.Attributes;
+namespace JustCSharp.AspNetCore.FluentValidation.Attributes;
 
 public class RequestValidationAttribute : ActionFilterAttribute
 {

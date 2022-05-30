@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace JustCSharp.Api.Swashbuckle
+namespace JustCSharp.AspNetCore.Swashbuckle
 {
     public class ApiKeyResponseOperationFilter : IOperationFilter
     {
@@ -21,8 +21,9 @@ namespace JustCSharp.Api.Swashbuckle
         {
             // Check for authorize attribute
             var hasAuthorize =
-                context.MethodInfo.DeclaringType.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any() ||
-                context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any();
+                (context.MethodInfo.DeclaringType != null
+                 && context.MethodInfo.DeclaringType.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any()
+                ) || context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any();
 
             if (!hasAuthorize) return;
 
