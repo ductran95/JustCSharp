@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace JustCSharp.Utility.Helpers
@@ -28,6 +29,42 @@ namespace JustCSharp.Utility.Helpers
             }
 
             return IsAssignableToGenericType(givenTypeInfo.BaseType, genericType);
+        }
+        
+        public static string GetCurrentMethodName()
+        {
+            StackTrace stackTrace = new StackTrace();
+            StackFrame stackFrame = stackTrace.GetFrame(1);
+
+            if (stackFrame == null)
+            {
+                return string.Empty;
+            }
+        
+            var method = stackFrame.GetMethod();
+        
+            if (method == null)
+            {
+                return string.Empty;
+            }
+        
+        
+            string methodName = method.Name;
+
+            if (methodName == "MoveNext")
+            {
+                methodName = method.DeclaringType?.Name;
+                var lessIndex = methodName.IndexOf('<') + 1;
+                var greaterIndex = methodName.IndexOf('>');
+                methodName = methodName[lessIndex..greaterIndex];
+                string className = method.DeclaringType?.DeclaringType?.Name;
+                return $"{className}.{methodName}"; 
+            }
+            else
+            {
+                string className = method.DeclaringType?.Name;
+                return $"{className}.{methodName}";
+            }
         }
     }
 }
