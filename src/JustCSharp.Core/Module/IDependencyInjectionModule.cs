@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace JustCSharp.Core.Module
 {
-    public interface IModule
+    public interface IDependencyInjectionModule
     {
         /// <summary>
         /// Order of registering

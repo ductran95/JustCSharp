@@ -30,9 +30,9 @@ namespace JustCSharp.Core.Module.Extensions
         public static void RegisterModulesFromAssemblies(this IServiceCollection serviceCollection, IConfiguration configuration, IHostEnvironment environment, params Assembly[] assemblies)
         {
             var moduleTypes = assemblies.SelectMany(a => a.DefinedTypes
-                .Where(x => typeof(IModule).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract));
+                .Where(x => typeof(IDependencyInjectionModule).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract));
             
-            var moduleInstances = moduleTypes.Select(Activator.CreateInstance).Cast<IModule>()
+            var moduleInstances = moduleTypes.Select(Activator.CreateInstance).Cast<IDependencyInjectionModule>()
                 .OrderBy(x => x.Order).ThenBy(x=>x.GetType().Name);
             
             foreach (var moduleInstance in moduleInstances)
