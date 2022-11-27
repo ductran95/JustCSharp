@@ -1,15 +1,10 @@
+using JustCSharp.Core.Module;
 using Microsoft.AspNetCore.Builder;
 
-#if NET6_0_OR_GREATER
 namespace JustCSharp.AspNetCore.Module
 {
-    public interface IWebApplicationModule
+    public interface IAspNetCoreModule: IModule
     {
-        /// <summary>
-        /// Order of registering
-        /// </summary>
-        int Order => -1;
-        
         /// <summary>
         /// Register services
         /// </summary>
@@ -17,4 +12,3 @@ namespace JustCSharp.AspNetCore.Module
         void Register(WebApplication app);
     }
 }
-#endif

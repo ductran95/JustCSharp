@@ -1,11 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\JustCSharp.AspNetCore\JustCSharp.AspNetCore.csproj" />
     </ItemGroup>
 
 </Project>
