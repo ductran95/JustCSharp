@@ -17,7 +17,7 @@ namespace JustCSharp.Utility.Extensions
             return query.Where(exp);
         }
 
-        public static IQueryable<T> SortBy<T>(this IQueryable<T> query, IEnumerable<SortRequest> sorts)
+        public static IQueryable<T> SortBy<T>(this IQueryable<T> query, IEnumerable<SortRequest>? sorts)
         {
             if (sorts == null || !sorts.Any())
             {
@@ -25,7 +25,7 @@ namespace JustCSharp.Utility.Extensions
             }
             
             var firstSort = sorts.FirstOrDefault();
-            IOrderedQueryable<T> result = null;
+            IOrderedQueryable<T>? result = null;
 
             // ReSharper disable once PossibleNullReferenceException
             if (firstSort.Asc)

@@ -4,11 +4,11 @@ namespace JustCSharp.Utility.Extensions
 {
     public static class StringExtensions
     {
-        public static object ToType(this string input, Type type)
+        public static object ToType(this string? input, Type type)
         {
             bool isNullable = false;
             Type dataType = type;
-            Type nonNullType = Nullable.GetUnderlyingType(dataType);
+            Type? nonNullType = Nullable.GetUnderlyingType(dataType);
 
             if (nonNullType != null)
             {
@@ -21,7 +21,7 @@ namespace JustCSharp.Utility.Extensions
                 isNullable = true;
             }
 
-            object result = null;
+            object? result = null;
 
             if (input != null)
             {

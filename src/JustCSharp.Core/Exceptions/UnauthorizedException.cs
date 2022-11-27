@@ -8,7 +8,7 @@ namespace JustCSharp.Core.Exceptions
 {
     public class UnauthorizedException: DomainException
     {
-        public UnauthorizedException(string message = "", Exception innerException = null) : base(message, innerException)
+        public UnauthorizedException(string message = "", Exception? innerException = null) : base(message, innerException)
         {
         }
 

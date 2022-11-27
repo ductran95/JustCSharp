@@ -100,7 +100,7 @@ namespace JustCSharp.Utility.Helpers
                 propertyType = pi.PropertyType;
             }
 
-            Expression dataExp = null;
+            Expression dataExp = null!;
             if (stringComparison != null)
             {
                 switch (stringComparison)

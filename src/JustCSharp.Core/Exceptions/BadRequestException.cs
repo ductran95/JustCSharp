@@ -10,16 +10,17 @@ namespace JustCSharp.Core.Exceptions
     {
         public IEnumerable<Error> Errors { get; private set; }
 
-        public BadRequestException(string message = "", Exception innerException = null) : base(message, innerException)
+        public BadRequestException(string message = "", Exception? innerException = null) : base(message, innerException)
         {
+            Errors = new List<Error>(); // Make sure that list errors can not null
         }
 
-        public BadRequestException(IEnumerable<Error> errors, string message = "", Exception innerException = null) : this(message, innerException)
+        public BadRequestException(IEnumerable<Error> errors, string message = "", Exception? innerException = null) : this(message, innerException)
         {
             Errors = errors;
         }
 
-        public BadRequestException(Error error, string message = "", Exception innerException = null) : this(message, innerException)
+        public BadRequestException(Error error, string message = "", Exception? innerException = null) : this(message, innerException)
         {
             Errors = new List<Error>()
             {
@@ -29,7 +30,7 @@ namespace JustCSharp.Core.Exceptions
 
         public override HttpException WrapException()
         {
-            if (Errors == null || !Errors.Any())
+            if (!Errors.Any())
             {
                 Errors = new List<Error>()
                 {

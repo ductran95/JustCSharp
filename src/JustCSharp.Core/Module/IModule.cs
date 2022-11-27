@@ -17,6 +17,6 @@ namespace JustCSharp.Core.Module
         /// <param name="serviceCollection"></param>
         /// <param name="configuration"></param>
         /// <param name="environment">Hosting environment, nullable</param>
-        void Register(IServiceCollection serviceCollection, IConfiguration configuration, IHostEnvironment environment);
+        void Register(IServiceCollection serviceCollection, IConfiguration configuration, IHostEnvironment? environment);
     }
 }

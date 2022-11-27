@@ -12,7 +12,7 @@ namespace JustCSharp.Utility.Helpers
         // private static int DerivationIteration = 1000;
 
         // 128-bit = 32 character
-        public static string PassPhrase;
+        public static string PassPhrase = null!;
         
         public delegate HashAlgorithm HashAlgorithmCreator();
 
@@ -87,7 +87,7 @@ namespace JustCSharp.Utility.Helpers
         /// <param name="encoding"></param>
         /// <returns>Hashed string in UPPERCASE</returns>
         /// <exception cref="NotSupportedException"></exception>
-        public static string Hash(string rawText, HashAlgorithmEnum hashAlgorithm, Encoding encoding = null)
+        public static string Hash(string rawText, HashAlgorithmEnum hashAlgorithm, Encoding? encoding = null)
         {
             HashAlgorithmCreator hashCreator;
             switch (hashAlgorithm)

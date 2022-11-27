@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -5,9 +6,9 @@ namespace JustCSharp.Core.Logging.Extensions
 {
     public static class LoggingExtensions
     {
-        public static Stopwatch StartStopwatch(this ILogger logger)
+        public static Stopwatch? StartStopwatch(this ILogger logger)
         {
-            Stopwatch stopwatch = null;
+            Stopwatch? stopwatch = null;
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 stopwatch = Stopwatch.StartNew();
@@ -16,11 +17,11 @@ namespace JustCSharp.Core.Logging.Extensions
             return stopwatch;
         }
         
-        public static string GetElapsedTime(this ILogger logger, Stopwatch stopwatch)
+        public static string GetElapsedTime(this ILogger logger, Stopwatch? stopwatch)
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                return stopwatch?.ToString();
+                return stopwatch?.ToString() ?? string.Empty;
             }
 
             return "Elapsed time only available when Trace is enabled";

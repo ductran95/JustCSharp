@@ -17,7 +17,8 @@ namespace JustCSharp.Utility.Helpers
 
             foreach (var interfaceType in givenTypeInfo.GetInterfaces())
             {
-                if (interfaceType.GetTypeInfo().IsGenericType && interfaceType.GetGenericTypeDefinition() == genericType)
+                if (interfaceType.GetTypeInfo().IsGenericType &&
+                    interfaceType.GetGenericTypeDefinition() == genericType)
                 {
                     return true;
                 }
@@ -30,7 +31,7 @@ namespace JustCSharp.Utility.Helpers
 
             return IsAssignableToGenericType(givenTypeInfo.BaseType, genericType);
         }
-        
+
         public static string GetCurrentMethodName()
         {
             StackTrace stackTrace = new StackTrace();
@@ -40,29 +41,29 @@ namespace JustCSharp.Utility.Helpers
             {
                 return string.Empty;
             }
-        
+
             var method = stackFrame.GetMethod();
-        
+
             if (method == null)
             {
                 return string.Empty;
             }
-        
-        
+
+
             string methodName = method.Name;
 
             if (methodName == "MoveNext")
             {
-                methodName = method.DeclaringType?.Name;
+                methodName = method.DeclaringType?.Name ?? string.Empty;
                 var lessIndex = methodName.IndexOf('<') + 1;
                 var greaterIndex = methodName.IndexOf('>');
                 methodName = methodName[lessIndex..greaterIndex];
-                string className = method.DeclaringType?.DeclaringType?.Name;
-                return $"{className}.{methodName}"; 
+                string className = method.DeclaringType?.DeclaringType?.Name ?? string.Empty;
+                return $"{className}.{methodName}";
             }
             else
             {
-                string className = method.DeclaringType?.Name;
+                string className = method.DeclaringType?.Name ?? string.Empty;
                 return $"{className}.{methodName}";
             }
         }

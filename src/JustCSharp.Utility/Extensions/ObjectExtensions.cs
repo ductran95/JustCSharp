@@ -6,7 +6,7 @@ namespace JustCSharp.Utility.Extensions
 {
     public static class ObjectExtensions
     {
-        private static readonly Dictionary<Type, object> DefaultTypeValues = new Dictionary<Type, object>();
+        private static readonly Dictionary<Type, object?> DefaultTypeValues = new();
 
         public static bool ContainsProperty(this object source, string propName)
         {
@@ -19,18 +19,18 @@ namespace JustCSharp.Utility.Extensions
             return source.GetType().GetGenericTypeName();
         }
 
-        public static T GetPropertyValue<T>(this object source, string propName)
+        public static T? GetPropertyValue<T>(this object? source, string propName)
         {
             if (source == null)
             {
                 return default(T);
             }
 
-            if(source is JsonDocument jsonDocument)
+            if (source is JsonDocument jsonDocument)
             {
                 JsonElement root = jsonDocument.RootElement;
                 var jsonProp = root.GetProperty(propName);
-                return (T)jsonProp.ToObject(typeof(T));
+                return (T?)jsonProp.ToObject(typeof(T));
             }
 
             var prop = source.GetType().GetProperty(propName);
@@ -46,14 +46,14 @@ namespace JustCSharp.Utility.Extensions
             return value != null ? (T)value : default(T);
         }
 
-        public static object GetPropertyValue(this object source, string propName)
+        public static object? GetPropertyValue(this object? source, string propName)
         {
             if (source == null)
             {
                 return null;
             }
 
-            if(source is JsonDocument jsonDocument)
+            if (source is JsonDocument jsonDocument)
             {
                 JsonElement root = jsonDocument.RootElement;
                 var jsonProp = root.GetProperty(propName);
@@ -71,9 +71,9 @@ namespace JustCSharp.Utility.Extensions
             return prop?.GetValue(source) ?? field?.GetValue(source);
         }
 
-        public static object ChangeType(this object @object, Type type)
+        public static object? ChangeType(this object @object, Type type)
         {
-            object result = null;
+            object? result = null;
             var nonNullType = Nullable.GetUnderlyingType(type);
 
             if (nonNullType != null)
@@ -155,19 +155,23 @@ namespace JustCSharp.Utility.Extensions
             }
         }
 
-        public static object GetDefaultValue(this Type type)
+        public static object? GetDefaultValue(this Type type)
         {
             if (DefaultTypeValues.ContainsKey(type))
             {
                 return DefaultTypeValues[type];
             }
 
-            object defaultValue;
+            object? defaultValue;
 
             if (type.IsValueType)
+            {
                 defaultValue = Activator.CreateInstance(type);
+            }
             else
+            {
                 defaultValue = null;
+            }
 
             DefaultTypeValues[type] = defaultValue;
             return defaultValue;

@@ -10,7 +10,8 @@ namespace JustCSharp.Core.Logging.Extensions
         public static ILogger GetLogger(this ILazyServiceProvider lazyServiceProvider, Type serviceType)
         {
             var loggerFactory = lazyServiceProvider.LazyGetService<ILoggerFactory>();
-            return lazyServiceProvider.LazyGetService<ILogger>(provider => loggerFactory?.CreateLogger(serviceType.FullName) ?? NullLogger.Instance);
+            return lazyServiceProvider.LazyGetService<ILogger>(provider =>
+                loggerFactory?.CreateLogger(serviceType.FullName) ?? NullLogger.Instance);
         }
     }
 }

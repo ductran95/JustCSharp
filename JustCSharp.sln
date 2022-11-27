@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.AspNetCore.Fluen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.AspNetCore", "src\JustCSharp.AspNetCore\JustCSharp.AspNetCore.csproj", "{AE7D3E22-5BE1-4E70-8856-0700887228CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JustCSharp.AspNetCore.OpenTelemetry", "src\JustCSharp.AspNetCore.OpenTelemetry\JustCSharp.AspNetCore.OpenTelemetry.csproj", "{5B972651-2EFB-4A47-82A3-E7301D478AA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,5 +80,9 @@ Global
 		{AE7D3E22-5BE1-4E70-8856-0700887228CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE7D3E22-5BE1-4E70-8856-0700887228CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE7D3E22-5BE1-4E70-8856-0700887228CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B972651-2EFB-4A47-82A3-E7301D478AA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B972651-2EFB-4A47-82A3-E7301D478AA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B972651-2EFB-4A47-82A3-E7301D478AA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B972651-2EFB-4A47-82A3-E7301D478AA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

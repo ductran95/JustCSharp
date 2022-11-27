@@ -21,7 +21,7 @@ namespace JustCSharp.Data
         public int PageSize { get; set; }
         public int Total { get; set; }
         public int TotalPage { get; set; }
-        public IEnumerable<T> Data { get; set; }
+        public IEnumerable<T>? Data { get; set; }
 
         public void CalculateTotalPage()
         {
