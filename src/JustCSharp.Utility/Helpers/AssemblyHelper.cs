@@ -7,7 +7,7 @@ namespace JustCSharp.Utility.Helpers;
 public static class AssemblyHelper
 {
     public static string JustCSharpAssemblyVersion => GetAssemblyVersion(typeof(AssemblyHelper));
-    public static string ExecutingAssemblyVersion => GetAssemblyVersion(Assembly.GetExecutingAssembly());
+    public static string ExecutingAssemblyVersion => GetAssemblyVersion(Assembly.GetCallingAssembly());
 
     public static string GetAssemblyVersion(Assembly assembly)
     {
@@ -34,5 +34,10 @@ public static class AssemblyHelper
     public static string GetAssemblyVersion(Type type)
     {
         return GetAssemblyVersion(type.Assembly);
+    }
+
+    public static string GetAssemblyVersion<T>()
+    {
+        return GetAssemblyVersion(typeof(T));
     }
 }
