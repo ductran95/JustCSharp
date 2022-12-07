@@ -9,14 +9,6 @@ namespace JustCSharp.FluentValidation.Validators
         public FilterRequestValidator()
         {
             RuleFor(x => x.Field).NotEmpty();
-            RuleFor(x => x).Must(x => OperatorHelper.OnlyOneTrue(
-                !string.IsNullOrEmpty(x.ValueString),
-                x.ValueGuid != null,
-                x.ValueDateTimeFrom != null || x.ValueDateTimeTo != null,
-                x.ValueNumberFrom != null || x.ValueNumberTo != null,
-                x.ValueBool != null,
-                x.ValueList != null
-            ));
         }
     }
 }

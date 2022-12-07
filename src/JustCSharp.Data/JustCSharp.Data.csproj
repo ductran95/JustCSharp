@@ -20,4 +20,8 @@
       </Compile>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\JustCSharp.Utility\JustCSharp.Utility.csproj" />
+    </ItemGroup>
+
 </Project>

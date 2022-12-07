@@ -26,85 +26,8 @@ namespace JustCSharp.Utility.Extensions
                 var prop = properties.FirstOrDefault(x => x.Name == filter.Field);
                 var propType = prop.PropertyType;
 
-                Expression<Func<T, bool>> expression = null;
+                Expression<Func<T, bool>> expression = filter.ToExpression<T>();
 
-                if (filter.ValueDateTimeFrom != null || filter.ValueDateTimeTo != null)
-                {
-                    Expression<Func<T, bool>> expressionFrom = null;
-                    Expression<Func<T, bool>> expressionTo = null;
-
-                    if (filter.ValueDateTimeFrom != null)
-                    {
-                        expressionFrom =
-                            ExpressionHelper.CreateGTEExpression<T>(param, prop.Name, filter.ValueDateTimeFrom.Value);
-                    }
-                    
-                    if (filter.ValueDateTimeTo != null)
-                    {
-                        expressionTo =
-                            ExpressionHelper.CreateLTEExpression<T>(param, prop.Name, filter.ValueDateTimeTo.Value);
-                    }
-
-                    if (expressionFrom != null && expressionTo != null)
-                    {
-                        var leftVisitor = new ReplaceExpressionVisitor(expressionFrom.Parameters[0], param);
-                        var left = leftVisitor.Visit(expressionFrom.Body);
-                
-                        var rightVisitor = new ReplaceExpressionVisitor(expressionTo.Parameters[0], param);
-                        var right = rightVisitor.Visit(expressionTo.Body);
-                        
-                        expression = ExpressionHelper.CreateAndExpression<T>(param, left, right);
-                    }
-                    else
-                    {
-                        expression = expressionFrom ?? expressionTo;
-                    }
-                }
-                else if (filter.ValueNumberFrom != null || filter.ValueNumberTo != null)
-                {
-                    Expression<Func<T, bool>> expressionFrom = null;
-                    Expression<Func<T, bool>> expressionTo = null;
-
-                    if (filter.ValueNumberFrom != null)
-                    {
-                        expressionFrom =
-                            ExpressionHelper.CreateGTEExpression<T>(param, prop.Name, filter.ValueNumberFrom.Value);
-                    }
-                    
-                    if (filter.ValueNumberTo != null)
-                    {
-                        expressionTo =
-                            ExpressionHelper.CreateLTEExpression<T>(param, prop.Name, filter.ValueNumberTo.Value);
-                    }
-
-                    if (expressionFrom != null && expressionTo != null)
-                    {
-                        var leftVisitor = new ReplaceExpressionVisitor(expressionFrom.Parameters[0], param);
-                        var left = leftVisitor.Visit(expressionFrom.Body);
-                
-                        var rightVisitor = new ReplaceExpressionVisitor(expressionTo.Parameters[0], param);
-                        var right = rightVisitor.Visit(expressionTo.Body);
-                        
-                        expression = ExpressionHelper.CreateAndExpression<T>(param, left, right);
-                    }
-                    else
-                    {
-                        expression = expressionFrom ?? expressionTo;
-                    }
-                }
-                else if (filter.ValueBool != null)
-                {
-                    expression = ExpressionHelper.CreateEqualExpression<T>(param, prop.Name, filter.ValueBool.Value);
-                }
-                else if (filter.ValueList != null)
-                {
-                    expression = ExpressionHelper.CreateContainExpression<T>(param, prop.Name, filter.ValueList);
-                }
-                else
-                {
-                    expression = ExpressionHelper.CreateContainExpression<T>(param, prop.Name, filter.ValueString, StringComparison.InvariantCultureIgnoreCase);
-                }
-                
                 expressions.Add(expression);
             }
 
