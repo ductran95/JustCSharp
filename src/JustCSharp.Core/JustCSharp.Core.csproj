@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\JustCSharp.Data\JustCSharp.Data.csproj" />
       <ProjectReference Include="..\JustCSharp.Utility\JustCSharp.Utility.csproj" />
     </ItemGroup>
 

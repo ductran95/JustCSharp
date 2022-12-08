@@ -1,6 +1,6 @@
-namespace JustCSharp.Data.Enums
+namespace JustCSharp.Utility
 {
-    public enum HashAlgorithmEnum
+    public enum HashAlgorithmType
     {
         MD5 = 1,
         SHA1,

@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using JustCSharp.Data.Enums;
 
 namespace JustCSharp.Utility.Helpers
 {
@@ -87,28 +86,28 @@ namespace JustCSharp.Utility.Helpers
         /// <param name="encoding"></param>
         /// <returns>Hashed string in UPPERCASE</returns>
         /// <exception cref="NotSupportedException"></exception>
-        public static string Hash(string rawText, HashAlgorithmEnum hashAlgorithm, Encoding? encoding = null)
+        public static string Hash(string rawText, HashAlgorithmType hashAlgorithm, Encoding? encoding = null)
         {
             HashAlgorithmCreator hashCreator;
             switch (hashAlgorithm)
             {
-                case HashAlgorithmEnum.MD5:
+                case HashAlgorithmType.MD5:
                     hashCreator = MD5.Create;
                     break;
                 
-                case HashAlgorithmEnum.SHA1:
+                case HashAlgorithmType.SHA1:
                     hashCreator = SHA1.Create;
                     break;
                 
-                case HashAlgorithmEnum.SHA256:
+                case HashAlgorithmType.SHA256:
                     hashCreator = SHA256.Create;
                     break;
                 
-                case HashAlgorithmEnum.SHA384:
+                case HashAlgorithmType.SHA384:
                     hashCreator = SHA384.Create;
                     break;
                 
-                case HashAlgorithmEnum.SHA512:
+                case HashAlgorithmType.SHA512:
                     hashCreator = SHA512.Create;
                     break;
                 

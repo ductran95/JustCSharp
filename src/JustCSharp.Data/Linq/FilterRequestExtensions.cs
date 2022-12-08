@@ -2,22 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using JustCSharp.Data.Constants;
 using JustCSharp.Data.Requests;
 using JustCSharp.Utility.Helpers;
 
-namespace JustCSharp.Utility.Extensions
+namespace JustCSharp.Data.Linq
 {
     public static class FilterRequestExtensions
     {
-        public static Expression<Func<T, bool>> ToExpression<T>(this IEnumerable<FilterRequest> filters)
+        public static Expression<Func<T, bool>>? ToExpression<T>(this IEnumerable<FilterRequest>? filters)
         {
             if (filters == null || !filters.Any())
             {
                 return null;
             }
 
-            var properties = typeof(T).GetProperties(ReflectionConstants.SearchPropertyFlags);
+            var properties = typeof(T).GetProperties(ReflectionHelper.SearchPropertyFlags);
             var param = Expression.Parameter(typeof(T), "p");
             
             List<Expression<Func<T, bool>>> expressions = new List<Expression<Func<T, bool>>>();

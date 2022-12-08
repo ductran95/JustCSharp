@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using JustCSharp.Data.Constants;
+using JustCSharp.Utility.Helpers;
 
 namespace JustCSharp.Utility.Extensions
 {
@@ -35,7 +35,7 @@ namespace JustCSharp.Utility.Extensions
 
         public static bool IsConvertible(this Type type)
         {
-            return ReflectionConstants.ConvertibleTypes.Contains(type);
+            return ReflectionHelper.ConvertibleTypes.Contains(type);
         }
 
         public static Type GetItemType(this Type enumerableType)

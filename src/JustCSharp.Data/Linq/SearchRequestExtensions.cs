@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JustCSharp.Data.Requests;
 
-namespace JustCSharp.Utility.Extensions
+namespace JustCSharp.Data.Linq
 {
     public static class SearchRequestExtensions
     {

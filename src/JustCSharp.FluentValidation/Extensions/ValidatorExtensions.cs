@@ -10,6 +10,7 @@ using JustCSharp.Data;
 using JustCSharp.Data.Constants;
 using JustCSharp.Data.Requests;
 using JustCSharp.Utility.Extensions;
+using JustCSharp.Utility.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JustCSharp.FluentValidation.Extensions
@@ -21,7 +22,7 @@ namespace JustCSharp.FluentValidation.Extensions
         {
             var requestName = searchRequest.GetGenericTypeName();
 
-            var properties = typeof(TData).GetProperties(ReflectionConstants.SearchPropertyFlags);
+            var properties = typeof(TData).GetProperties(ReflectionHelper.SearchPropertyFlags);
             var errors = new List<ValidationFailure>();
 
             if (searchRequest.Filters != null && searchRequest.Filters.Any())

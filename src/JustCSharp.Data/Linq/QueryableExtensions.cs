@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using JustCSharp.Data.Requests;
+using JustCSharp.Utility.Extensions;
 
-namespace JustCSharp.Utility.Extensions
+namespace JustCSharp.Data.Linq
 {
     public static class QueryableExtensions
     {
-        public static IQueryable<T> FilterBy<T>(this IQueryable<T> query, IEnumerable<FilterRequest> filters)
+        public static IQueryable<T> FilterBy<T>(this IQueryable<T> query, IEnumerable<FilterRequest>? filters)
         {
             if (filters == null || !filters.Any())
             {
