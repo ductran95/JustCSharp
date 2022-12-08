@@ -11,4 +11,5 @@ public enum FilterValueType
     Decimal,
     String,
     Guid,
+    DateTime,
 }

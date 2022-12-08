@@ -8,11 +8,6 @@ using JustCSharp.Utility.Helpers;
 
 namespace JustCSharp.Data.Requests
 {
-    public interface IFilterRequest
-    {
-        Expression<Func<TEntity, bool>> ToExpression<TEntity>();
-    }
-    
     public class FilterRequest: IRequest, IFilterRequest
     {
         public string Field { get; set; }

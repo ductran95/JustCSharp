@@ -100,5 +100,16 @@ public static class FilterOperators
                 FilterOperator.NotEqual,
             }
         },
+        {
+            FilterValueType.DateTime, new List<FilterOperator>()
+            {
+                FilterOperator.Equal,
+                FilterOperator.NotEqual,
+                FilterOperator.GreaterThan,
+                FilterOperator.GreaterThanOrEqual,
+                FilterOperator.LessThan,
+                FilterOperator.LessThanOrEqual,
+            }
+        }
     };
 }
