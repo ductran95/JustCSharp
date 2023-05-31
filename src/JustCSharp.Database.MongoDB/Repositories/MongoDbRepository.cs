@@ -46,30 +46,36 @@ namespace JustCSharp.Database.MongoDB.Repositories
         
         public IMongoDatabase GetDatabase()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetDatabase");
+            
             _dbContext.CheckStateAndConnect();
             return _dbContext.Database;
         }
 
         public async Task<IMongoDatabase> GetDatabaseAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetDatabaseAsync");
             await _dbContext.CheckStateAndConnectAsync(cancellationToken);
             return _dbContext.Database;
         }
 
         public IMongoCollection<TEntity> GetCollection()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetCollection");
             _dbContext.CheckStateAndConnect();
             return _dbContext.Collection<TEntity>();
         }
 
         public async Task<IMongoCollection<TEntity>> GetCollectionAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetCollectionAsync");
             await _dbContext.CheckStateAndConnectAsync(cancellationToken);
             return _dbContext.Collection<TEntity>();
         }
 
         public IMongoQueryable<TEntity> GetMongoQueryable()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetMongoQueryable");
             _dbContext.CheckStateAndConnect();
             var collection = _dbContext.Collection<TEntity>();
 
@@ -82,6 +88,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task<IMongoQueryable<TEntity>> GetMongoQueryableAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetMongoQueryableAsync");
             await _dbContext.CheckStateAndConnectAsync(cancellationToken);
             var collection = _dbContext.Collection<TEntity>();
 
@@ -94,6 +101,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public IAggregateFluent<TEntity> GetAggregate()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetAggregate");
             _dbContext.CheckStateAndConnect();
             var collection = _dbContext.Collection<TEntity>();
 
@@ -105,6 +113,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task<IAggregateFluent<TEntity>> GetAggregateAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetAggregateAsync");
             await _dbContext.CheckStateAndConnectAsync(cancellationToken);
             var collection = _dbContext.Collection<TEntity>();
 
@@ -116,16 +125,19 @@ namespace JustCSharp.Database.MongoDB.Repositories
         
         public IQueryable<TEntity> GetQueryable()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetQueryable");
             return GetMongoQueryable();
         }
 
         public async Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetQueryableAsync");
             return await GetMongoQueryableAsync(cancellationToken);
         }
 
         public TEntity Find(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.Find");
             var query = GetMongoQueryable();
             return IAsyncCursorSourceExtensions.FirstOrDefault(query
                     .Where(predicate));
@@ -133,6 +145,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.FindAsync");
             var query = await GetMongoQueryableAsync(cancellationToken);
             return await MongoQueryable.Where(query, predicate)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -140,6 +153,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public List<TEntity> GetList(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetList");
             var query = GetMongoQueryable();
             return IAsyncCursorSourceExtensions.ToList(query
                     .Where(predicate));
@@ -147,6 +161,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetListAsync");
             var query = await GetMongoQueryableAsync(cancellationToken);
             return await MongoQueryable.Where(query, predicate)
                 .ToListAsync(cancellationToken);
@@ -322,6 +337,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
         
         public TEntity Insert(TEntity entity, bool autoSave = false)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.Insert");
             PreInsert(entity);
 
             _dbContext.CheckStateAndConnect();
@@ -346,6 +362,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task<TEntity> InsertAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.InsertAsync");
             await PreInsertAsync(entity, cancellationToken);
 
             await _dbContext.CheckStateAndConnectAsync(cancellationToken);
@@ -372,6 +389,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public void InsertMany(IEnumerable<TEntity> entities, bool autoSave = false)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.InsertMany");
             var entityArray = entities.ToArray();
 
             foreach (var entity in entityArray)
@@ -394,6 +412,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task InsertManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.InsertManyAsync");
             var entityArray = entities.ToArray();
 
             foreach (var entity in entityArray)
@@ -416,6 +435,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public TEntity Update(TEntity entity, bool autoSave = false)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.Update");
             PreUpdate(entity);
             
             if (entity is ISoftDelete softDeleteEntity && softDeleteEntity.IsDeleted)
@@ -454,6 +474,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task<TEntity> UpdateAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.UpdateAsync");
             await PreUpdateAsync(entity, cancellationToken);
             
             if (entity is ISoftDelete softDeleteEntity && softDeleteEntity.IsDeleted)
@@ -494,6 +515,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
         
         public void UpdateMany(IEnumerable<TEntity> entities, bool autoSave = false)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.UpdateMany");
             var entityArray = entities.ToArray();
             List<WriteModel<TEntity>> replaceRequests = new List<WriteModel<TEntity>>();
 
@@ -532,6 +554,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task UpdateManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.UpdateManyAsync");
             var entityArray = entities.ToArray();
             List<WriteModel<TEntity>> replaceRequests = new List<WriteModel<TEntity>>();
 
@@ -570,6 +593,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public void Delete(TEntity entity, bool autoSave = false)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.Delete");
             var isHardDelete = IsHardDeleted(entity);
             PreDelete(entity);
             
@@ -630,6 +654,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task DeleteAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.DeleteAsync");
             var isHardDelete = IsHardDeleted(entity);
             await PreDeleteAsync(entity, cancellationToken);
             
@@ -694,6 +719,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public void DeleteMany(IEnumerable<TEntity> entities, bool autoSave = false)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.DeleteMany");
             var softDeletedEntities = new List<TEntity>();
             var hardDeletedEntities = new List<TEntity>();
             List<WriteModel<TEntity>> replaceRequests = new List<WriteModel<TEntity>>();
@@ -763,6 +789,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task DeleteManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.DeleteManyAsync");
             var softDeletedEntities = new List<TEntity>();
             var hardDeletedEntities = new List<TEntity>();
             List<WriteModel<TEntity>> replaceRequests = new List<WriteModel<TEntity>>();
@@ -834,6 +861,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public void DeleteMany(Expression<Func<TEntity, bool>> predicate, bool autoSave = false)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.DeleteMany");
             var entities = IAsyncCursorSourceExtensions.ToList<TEntity>(GetMongoQueryable()
                     .Where(predicate));
 
@@ -842,6 +870,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
 
         public async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.DeleteManyAsync");
             var entities = await MongoQueryable.Where((await GetMongoQueryableAsync(cancellationToken)), predicate)
                 .ToListAsync(cancellationToken);
 

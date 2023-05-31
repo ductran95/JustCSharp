@@ -75,11 +75,15 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public virtual IMongoCollection<T> Collection<T>()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.Collection");
+            
             return Database.GetCollection<T>(GetCollectionName<T>());
         }
 
         public void CheckStateAndConnect()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.CheckStateAndConnect");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CheckStateAndConnect");
             
@@ -144,6 +148,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public async Task CheckStateAndConnectAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.CheckStateAndConnectAsync");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CheckStateAndConnectAsync");
             
@@ -219,16 +225,22 @@ namespace JustCSharp.Database.MongoDB.Context
         
         public bool IsInTransaction()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.IsInTransaction");
+            
             return IsConnected && SessionHandle != null;
         }
 
         public Task<bool> IsInTransactionAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.IsInTransactionAsync");
+            
             return Task.FromResult(IsConnected && SessionHandle != null);
         }
 
         public void BeginTransaction()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.BeginTransaction");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start BeginTransaction");
 
@@ -261,6 +273,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.BeginTransactionAsync");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start BeginTransactionAsync");
             
@@ -293,6 +307,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public void CommitTransaction()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.CommitTransaction");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CommitTransaction");
             
@@ -317,6 +333,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.CommitTransactionAsync");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start CommitTransactionAsync");
             
@@ -341,6 +359,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public void RollbackTransaction()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.RollbackTransaction");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start RollbackTransaction");
             
@@ -365,6 +385,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.RollbackTransactionAsync");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start RollbackTransactionAsync");
             
@@ -395,6 +417,8 @@ namespace JustCSharp.Database.MongoDB.Context
         
         protected virtual void InitializeCollections()
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.InitializeCollections");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start InitializeCollections");
             
@@ -423,6 +447,8 @@ namespace JustCSharp.Database.MongoDB.Context
 
         protected virtual async Task InitializeCollectionsAsync(CancellationToken cancellationToken = default)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.InitializeCollectionsAsync");
+            
             var stopwatch = Logger.StartStopwatch();
             Logger.LogInformation($"Start InitializeCollectionsAsync");
             
@@ -452,20 +478,26 @@ namespace JustCSharp.Database.MongoDB.Context
         protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
             IClientSessionHandle sessionHandle)
         {
-            InitializeDatabase(database, client, sessionHandle, EntityModels);
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.InitializeDatabase");
+            
+            InitializeDatabaseConfig(database, client, sessionHandle, EntityModels);
             InitializeCollections();
         }
 
         protected virtual async Task InitializeDatabaseAsync(IMongoDatabase database, IMongoClient client,
             IClientSessionHandle sessionHandle, CancellationToken cancellationToken = default)
         {
-            InitializeDatabase(database, client, sessionHandle, EntityModels);
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.InitializeDatabaseAsync");
+            
+            InitializeDatabaseConfig(database, client, sessionHandle, EntityModels);
             await InitializeCollectionsAsync(cancellationToken);
         }
 
-        protected virtual void InitializeDatabase(IMongoDatabase database, IMongoClient client,
+        protected virtual void InitializeDatabaseConfig(IMongoDatabase database, IMongoClient client,
             IClientSessionHandle sessionHandle, Dictionary<Type, IMongoEntityModel> entityModels)
         {
+            using var activity = Trace.ActivitySource.StartActivity("MongoDbContext.InitializeDatabaseConfig");
+            
             Database = database;
             Client = client;
             SessionHandle = sessionHandle;
@@ -691,7 +723,7 @@ namespace JustCSharp.Database.MongoDB.Context
             }
             else
             {
-                InitializeDatabase(database, client, session, modelCache);
+                InitializeDatabaseConfig(database, client, session, modelCache);
             }
             
             stopwatch?.Stop();
@@ -713,7 +745,7 @@ namespace JustCSharp.Database.MongoDB.Context
             }
             else
             {
-                InitializeDatabase(database, client, session, modelCache);
+                InitializeDatabaseConfig(database, client, session, modelCache);
             }
             
             stopwatch?.Stop();
