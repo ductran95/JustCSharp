@@ -37,7 +37,7 @@ namespace JustCSharp.Utility.Helpers
             return MimeTypes.GetMimeType(fileName);
         }
 
-        public static string GetExtensionFromMIME(string mime)
+        public static string? GetExtensionFromMIME(string mime)
         {
             return MimeTypes.GetMimeTypeExtensions(mime).FirstOrDefault();
         }

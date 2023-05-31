@@ -13,7 +13,7 @@ namespace JustCSharp.Utility.Helpers
             _newValue = newValue;
         }
 
-        public override Expression Visit(Expression node)
+        public override Expression? Visit(Expression? node)
         {
             if (node == _oldValue)
             {
