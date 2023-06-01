@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using JustCSharp.Data.Linq;
 using JustCSharp.Data.Requests;
+using JustCSharp.Database.MongoDB.Model;
 using MongoDB.Driver;
 
 namespace JustCSharp.Database.MongoDB.Extensions;
@@ -81,5 +82,27 @@ public static class AggregateFluentExtensions
         var skip = (page - 1) * pageSize;
 
         return query.Skip(skip).Limit(pageSize);
+    }
+    
+    public static IAggregateFluent<MongoFacetPagingResult<T>> FacetPagingBy<T>(
+        this IAggregateFluent<T> query, int page, int pageSize)
+    {
+        var skip = (page - 1) * pageSize;
+        var countPipeline = PipelineStageDefinitionBuilder.Count<T>();
+        var skipPipeline = PipelineStageDefinitionBuilder.Skip<T>(skip);
+        var limitPipeline = PipelineStageDefinitionBuilder.Limit<T>(pageSize);
+        
+        var countFacet = new AggregateFacet<T, AggregateCountResult>(
+            nameof(MongoFacetPagingResult<T>.CountResult),
+            PipelineDefinition<T, AggregateCountResult>.Create(
+                new List<IPipelineStageDefinition>{countPipeline}));
+        
+        var pagingFacet = new AggregateFacet<T, T>(
+            nameof(MongoFacetPagingResult<T>.Data),
+            PipelineDefinition<T, T>.Create(
+                new List<IPipelineStageDefinition>{skipPipeline, limitPipeline}));
+
+        return query
+            .Facet<T, MongoFacetPagingResult<T>>(countFacet, pagingFacet);
     }
 }
