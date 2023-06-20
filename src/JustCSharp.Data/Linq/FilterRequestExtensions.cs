@@ -22,10 +22,7 @@ namespace JustCSharp.Data.Linq
             List<Expression<Func<T, bool>>> expressions = new List<Expression<Func<T, bool>>>();
             foreach (var filter in filters)
             {
-                var prop = properties.FirstOrDefault(x => x.Name == filter.Field);
-                var propType = prop.PropertyType;
-
-                Expression<Func<T, bool>> expression = filter.ToExpression<T>();
+                Expression<Func<T, bool>> expression = filter.ToExpression<T>(properties, param);
 
                 expressions.Add(expression);
             }
