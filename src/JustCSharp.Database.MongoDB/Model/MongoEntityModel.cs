@@ -17,6 +17,7 @@ namespace JustCSharp.Database.MongoDB.Model
         {
             EntityType = typeof(TEntity);
             _bsonClassMap = new BsonClassMap<TEntity>();
+            CollectionName = typeof(TEntity).Name;
             ConfigureDefaultMap();
         }
 

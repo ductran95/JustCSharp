@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -28,11 +27,13 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// of multiple implementation types.
         /// </remarks>
         public static IServiceCollection TryAddInjectionFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
-            TryAddSingletonFromAssemblies(serviceCollection, assemblies);
-            TryAddScopedFromAssemblies(serviceCollection, assemblies); 
-            TryAddTransientFromAssemblies(serviceCollection, assemblies);
+            var listAssemblies = assemblies.ToList();
+            
+            TryAddSingletonFromAssemblies(serviceCollection, listAssemblies);
+            TryAddScopedFromAssemblies(serviceCollection, listAssemblies); 
+            TryAddTransientFromAssemblies(serviceCollection, listAssemblies);
 
             return serviceCollection;
         }
@@ -54,7 +55,7 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// of multiple implementation types.
         /// </remarks>
         public static IServiceCollection TryAddSingletonFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
             return InvokeAddInjectionFromAssemblies<ISingleton>(serviceCollection, assemblies,
                 ServiceLifetime.Singleton,
@@ -78,11 +79,11 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// of multiple implementation types.
         /// </remarks>
         public static IServiceCollection TryAddScopedFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
             return InvokeAddInjectionFromAssemblies<IScoped>(serviceCollection, assemblies,
                 ServiceLifetime.Scoped,
-                ServiceCollectionDescriptorExtensions.TryAdd);;
+                ServiceCollectionDescriptorExtensions.TryAdd);
         }
         
         /// <summary>
@@ -102,11 +103,11 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// of multiple implementation types.
         /// </remarks>
         public static IServiceCollection TryAddTransientFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
             return InvokeAddInjectionFromAssemblies<ITransient>(serviceCollection, assemblies,
                 ServiceLifetime.Transient,
-                ServiceCollectionDescriptorExtensions.TryAdd);;
+                ServiceCollectionDescriptorExtensions.TryAdd);
         }
         
         /// <summary>
@@ -117,11 +118,13 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// <param name="assemblies">The <see cref="Assembly"/>s.</param>
         /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
         public static IServiceCollection AddInjectionFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
-            AddSingletonFromAssemblies(serviceCollection, assemblies);
-            AddScopedFromAssemblies(serviceCollection, assemblies); 
-            AddTransientFromAssemblies(serviceCollection, assemblies);
+            var listAssemblies = assemblies.ToList();
+            
+            AddSingletonFromAssemblies(serviceCollection, listAssemblies);
+            AddScopedFromAssemblies(serviceCollection, listAssemblies); 
+            AddTransientFromAssemblies(serviceCollection, listAssemblies);
 
             return serviceCollection;
         }
@@ -133,7 +136,7 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// <param name="assemblies">The <see cref="Assembly"/>s.</param>
         /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
         public static IServiceCollection AddSingletonFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
             return InvokeAddInjectionFromAssemblies<ISingleton>(serviceCollection, assemblies,
                 ServiceLifetime.Singleton,
@@ -147,11 +150,11 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// <param name="assemblies">The <see cref="Assembly"/>s.</param>
         /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
         public static IServiceCollection AddScopedFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
             return InvokeAddInjectionFromAssemblies<IScoped>(serviceCollection, assemblies,
                 ServiceLifetime.Scoped,
-                AddEnumerable);;
+                AddEnumerable);
         }
         
         /// <summary>
@@ -161,11 +164,11 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// <param name="assemblies">The <see cref="Assembly"/>s.</param>
         /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
         public static IServiceCollection AddTransientFromAssemblies(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies)
+            IEnumerable<Assembly> assemblies)
         {
             return InvokeAddInjectionFromAssemblies<ITransient>(serviceCollection, assemblies,
                 ServiceLifetime.Transient,
-                AddEnumerable);;
+                AddEnumerable);
         }
 
         /// <summary>
@@ -179,17 +182,17 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// <typeparam name="T">The interface to scan</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
         /// <remarks>
-        /// Use <see cref="TryAddEnumerableFromAssemblies(IServiceCollection, IEnumerable&lt;Assembly>, ServiceLifetime)"/> when registering a service
+        /// Use <see cref="TryAddEnumerableFromAssemblies{T}"/> when registering a service
         /// implementation of a service type that
         /// supports multiple registrations of the same service type. Using
-        /// <see cref="AddEnumerableFromAssemblies(IServiceCollection, IEnumerable&lt;Assembly>, ServiceLifetime)"/> is not idempotent and can add
+        /// <see cref="AddEnumerableFromAssemblies{T}"/> is not idempotent and can add
         /// duplicate
         /// <see cref="ServiceDescriptor"/> instances if called twice. Using
-        /// <see cref="TryAddEnumerableFromAssemblies(IServiceCollection, IEnumerable&lt;Assembly>, ServiceLifetime)"/> will prevent registration
+        /// <see cref="TryAddEnumerableFromAssemblies{T}"/> will prevent registration
         /// of multiple implementation types.
         /// </remarks>
         public static IServiceCollection TryAddEnumerableFromAssemblies<T>(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies, ServiceLifetime lifetime)
+            IEnumerable<Assembly> assemblies, ServiceLifetime lifetime)
         {
             return InvokeAddEnumerableFromAssemblies<T>(serviceCollection, assemblies, lifetime, 
                 ServiceCollectionDescriptorExtensions.TryAddEnumerable);
@@ -206,14 +209,14 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         /// <typeparam name="T">The interface to scan</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
         public static IServiceCollection AddEnumerableFromAssemblies<T>(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies, ServiceLifetime lifetime)
+            IEnumerable<Assembly> assemblies, ServiceLifetime lifetime)
         {
             return InvokeAddEnumerableFromAssemblies<T>(serviceCollection, assemblies, lifetime, AddEnumerable);
         }
 
         private static IServiceCollection InvokeAddEnumerableFromAssemblies<T>(
             this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies, ServiceLifetime lifetime,
+            IEnumerable<Assembly> assemblies, ServiceLifetime lifetime,
             Action<IServiceCollection, ServiceDescriptor> action)
         {
             var interfaceType = typeof(T);
@@ -234,13 +237,15 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
         }
 
         private static IServiceCollection InvokeAddInjectionFromAssemblies<T>(this IServiceCollection serviceCollection,
-            [NotNull] IEnumerable<Assembly> assemblies, ServiceLifetime lifetime, Action<IServiceCollection, ServiceDescriptor> action)
+            IEnumerable<Assembly> assemblies, ServiceLifetime lifetime, Action<IServiceCollection, ServiceDescriptor> action)
         {
             var interfaceType = typeof(T);
 
-            var serviceMappings = new Dictionary<Type, Type>();
+            var serviceMappings = new Dictionary<Type, Type?>();
 
-            foreach (var assembly in assemblies)
+            var listAssemblies = assemblies.ToList();
+            
+            foreach (var assembly in listAssemblies)
             {
                 var singletonInterfaceTypes =
                     assembly.GetTypes().Where(x => x.IsInterface && interfaceType.IsAssignableFrom(x));
@@ -250,7 +255,7 @@ namespace JustCSharp.Core.DependencyInjection.Extensions
                 }
             }
 
-            foreach (var assembly in assemblies)
+            foreach (var assembly in listAssemblies)
             {
                 foreach (var serviceMapping in serviceMappings.Where(x => x.Value == null))
                 {

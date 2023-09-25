@@ -1,8 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Core.DependencyInjection;
-using JustCSharp.Core.Logging.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace JustCSharp.Authentication
 {
@@ -10,9 +8,9 @@ namespace JustCSharp.Authentication
     {
         protected readonly ILazyServiceProvider _serviceProvider;
 
-        protected IAuthContext _authContext;
+        protected IAuthContext? _authContext;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(AuthContextBase));
+        // private ILogger? Logger => _serviceProvider.GetLogger(typeof(AuthContextBase));
 
         public AuthContextProvider(ILazyServiceProvider serviceProvider)
         {
@@ -55,9 +53,9 @@ namespace JustCSharp.Authentication
     {
         protected readonly ILazyServiceProvider _serviceProvider;
         
-        protected TAuthContext _authContext;
+        protected TAuthContext? _authContext;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(AuthContextProvider<>));
+        // private ILogger? Logger => _serviceProvider.GetLogger(typeof(AuthContextProvider<>));
 
         protected AuthContextProvider(ILazyServiceProvider serviceProvider)
         {

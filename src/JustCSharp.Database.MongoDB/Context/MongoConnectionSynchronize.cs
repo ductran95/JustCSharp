@@ -22,6 +22,6 @@ namespace JustCSharp.Database.MongoDB.Context
     internal class MongoConnectionSynchronize
     {
         internal bool IsInitConnection { get; set; }
-        internal SemaphoreSlim Mutex { get; set; }
+        internal SemaphoreSlim? Mutex { get; set; }
     }
 }

@@ -9,6 +9,6 @@ namespace JustCSharp.Data.Entities
         public DateTime? ModifiedOn { get; set; }
         public string? ModifiedBy { get; set; }
         
-        void CheckAndSetAudit(string currentUser);
+        void CheckAndSetAudit(string? currentUser);
     }
 }

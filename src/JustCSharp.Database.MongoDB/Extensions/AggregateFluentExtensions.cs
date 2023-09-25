@@ -13,34 +13,37 @@ public static class AggregateFluentExtensions
 {
     public static IAggregateFluent<T> FilterBy<T>(this IAggregateFluent<T> query, IEnumerable<FilterRequest>? filters)
     {
-        if (filters == null || !filters.Any())
+        var filterRequests = filters as FilterRequest[] ?? filters?.ToArray();
+        
+        if (filterRequests == null || !filterRequests.Any())
         {
             return query;
         }
 
-        var exp = filters.ToExpression<T>();
+        var exp = filterRequests.ToExpression<T>();
         return query.Match(exp);
     }
 
     public static IAggregateFluent<T> OrderBy<T>(this IAggregateFluent<T> query, IEnumerable<SortRequest>? sorts)
     {
-        if (sorts == null || !sorts.Any())
+        var sortRequests = sorts as SortRequest[] ?? sorts?.ToArray();
+        
+        if (sortRequests == null || !sortRequests.Any())
         {
             return query;
         }
 
-        var sortList = sorts.ToList();
-        IOrderedAggregateFluent<T> result = null;
+        IOrderedAggregateFluent<T> result;
 
         Expression<Func<T, object>>? firstSortExp = null;
         SortRequest firstSort = null!;
         int i = 0;
         do
         {
-            firstSort = sortList[i];
+            firstSort = sortRequests[i];
             firstSortExp = firstSort.ToExpression<T>();
             i++;
-        } while (firstSortExp != null && i < sortList.Count());
+        } while (firstSortExp != null && i < sortRequests.Count());
 
         if (firstSortExp == null)
         {
@@ -56,9 +59,9 @@ public static class AggregateFluentExtensions
             result = query.SortByDescending(firstSortExp);
         }
 
-        for (; i < sortList.Count(); i++)
+        for (; i < sortRequests.Count(); i++)
         {
-            var sort = sortList[i];
+            var sort = sortRequests[i];
             var sortExp = sort.ToExpression<T>();
 
             if (sortExp != null)

@@ -14,7 +14,7 @@ namespace JustCSharp.Database.MongoDB.Context
         MongoDbContextOptions DbContextOptions { get; }
         IMongoClient Client { get; }
         IMongoDatabase Database { get; }
-        IClientSessionHandle SessionHandle { get; }
+        IClientSessionHandle? SessionHandle { get; }
         bool IsConnected { get; }
         string DatabaseName { get; }
         MongoUrl MongoUrl { get; }

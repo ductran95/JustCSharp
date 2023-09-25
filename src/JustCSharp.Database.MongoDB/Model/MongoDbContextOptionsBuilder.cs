@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using JustCSharp.Database.MongoDB.Context;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +8,7 @@ namespace JustCSharp.Database.MongoDB.Model
 {
     public class MongoDbContextOptionsBuilder<TDbContext> where TDbContext: IMongoDbContext
     {
-        private IServiceProvider _applicationServiceProvider;
+        private IServiceProvider? _applicationServiceProvider;
         private MongoDbContextOptions<TDbContext> _options;
 
         public MongoDbContextOptions<TDbContext> Options => _options;
@@ -25,8 +24,11 @@ namespace JustCSharp.Database.MongoDB.Model
             _options = new MongoDbContextOptions<TDbContext>();
         }
         
-        public MongoDbContextOptionsBuilder<TDbContext> UseConnectionStringName([NotNull] string connectionStringName)
+        public MongoDbContextOptionsBuilder<TDbContext> UseConnectionStringName(string connectionStringName)
         {
+            if (_applicationServiceProvider == null)
+                throw new InvalidOperationException();
+            
             var connection = _applicationServiceProvider.GetRequiredService<IConfiguration>();
             var connectionString = connection.GetConnectionString(connectionStringName);
             
@@ -38,7 +40,7 @@ namespace JustCSharp.Database.MongoDB.Model
             return this;
         }
 
-        public MongoDbContextOptionsBuilder<TDbContext> UseConnectionString([NotNull] string connectionString)
+        public MongoDbContextOptionsBuilder<TDbContext> UseConnectionString(string connectionString)
         {
             _options.ConnectionString = connectionString;
             
@@ -82,7 +84,7 @@ namespace JustCSharp.Database.MongoDB.Model
             return this;
         }
         
-        public MongoDbContextOptionsBuilder<TDbContext> UseSettings(Action<MongoClientSettings> settingAction)
+        public MongoDbContextOptionsBuilder<TDbContext> UseSettings(Action<MongoClientSettings>? settingAction)
         {
             settingAction?.Invoke(_options.Settings);
 

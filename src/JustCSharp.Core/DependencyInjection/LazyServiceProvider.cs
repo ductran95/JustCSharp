@@ -17,14 +17,14 @@ namespace JustCSharp.Core.DependencyInjection
             CachedServices = new();
         }
 
-        public virtual T? LazyGetRequiredService<T>()
+        public virtual T LazyGetRequiredService<T>()
         {
-            return (T?) LazyGetRequiredService(typeof(T));
+            return (T) LazyGetRequiredService(typeof(T));
         }
 
-        public virtual object? LazyGetRequiredService(Type serviceType)
+        public virtual object LazyGetRequiredService(Type serviceType)
         {
-            return CachedServices.GetOrAdd(serviceType, () => _serviceProvider.GetRequiredService(serviceType));
+            return CachedServices.GetOrAdd(serviceType, () => _serviceProvider.GetRequiredService(serviceType))!;
         }
 
         public virtual T? LazyGetService<T>()

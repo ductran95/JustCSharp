@@ -8,7 +8,7 @@ namespace JustCSharp.Data.Entities
         public DateTime? DeletedOn { get; set; }
         public string? DeletedBy { get; set; }
         
-        void CheckAndSetDeleteAudit(string currentUser);
+        void CheckAndSetDeleteAudit(string? currentUser);
         bool IsHardDeleted();
     }
 }

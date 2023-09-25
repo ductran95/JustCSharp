@@ -14,22 +14,22 @@ namespace JustCSharp.Uow
         TEntity Insert([NotNull] TEntity entity, bool autoSave = false);
         Task<TEntity> InsertAsync([NotNull] TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
         
-        void InsertMany([NotNull] IEnumerable<TEntity> entities, bool autoSave = false);
-        Task InsertManyAsync([NotNull] IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
+        void InsertMany(IEnumerable<TEntity> entities, bool autoSave = false);
+        Task InsertManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
         
         TEntity Update([NotNull] TEntity entity, bool autoSave = false);
         Task<TEntity> UpdateAsync([NotNull] TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
         
-        void UpdateMany([NotNull] IEnumerable<TEntity> entities, bool autoSave = false);
-        Task UpdateManyAsync([NotNull] IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
+        void UpdateMany(IEnumerable<TEntity> entities, bool autoSave = false);
+        Task UpdateManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
         
         void Delete([NotNull] TEntity entity, bool autoSave = false);
         Task DeleteAsync([NotNull] TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
         
-        void DeleteMany([NotNull] IEnumerable<TEntity> entities, bool autoSave = false);
-        Task DeleteManyAsync([NotNull] IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
+        void DeleteMany(IEnumerable<TEntity> entities, bool autoSave = false);
+        Task DeleteManyAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
         
-        void DeleteMany([NotNull] Expression<Func<TEntity, bool>> predicate, bool autoSave = false);
-        Task DeleteManyAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default);
+        void DeleteMany(Expression<Func<TEntity, bool>> predicate, bool autoSave = false);
+        Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default);
     }
 }

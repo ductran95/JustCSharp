@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -15,12 +14,12 @@ namespace JustCSharp.Uow
         IQueryable<TEntity> GetQueryable();
         Task<IQueryable<TEntity>> GetQueryableAsync(CancellationToken cancellationToken = default);
 
-        TEntity Find([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true);
+        TEntity? Find(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true);
 
-        Task<TEntity> FindAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default);
+        Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default);
 
-        List<TEntity> GetList([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true);
+        List<TEntity> GetList(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true);
 
-        Task<List<TEntity>> GetListAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default);
     }
 }

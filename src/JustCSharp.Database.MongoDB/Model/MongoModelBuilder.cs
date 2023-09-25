@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using JustCSharp.Utility.Extensions;
 
 namespace JustCSharp.Database.MongoDB.Model
@@ -16,17 +15,17 @@ namespace JustCSharp.Database.MongoDB.Model
             _entityModels = new Dictionary<Type, object>();
         }
 
-        public virtual void Entity<TEntity>(Action<IMongoEntityModel<TEntity>> buildAction = null)
+        public virtual void Entity<TEntity>(Action<IMongoEntityModel<TEntity>>? buildAction = null)
         {
             var model = (IMongoEntityModel<TEntity>) _entityModels.GetOrAdd(typeof(TEntity), () => new MongoEntityModel<TEntity>());
 
             buildAction?.Invoke(model);
         }
 
-        public virtual void Entity([NotNull] Type entityType, Action<IMongoEntityModel> buildAction = null)
+        public virtual void Entity(Type entityType, Action<IMongoEntityModel>? buildAction = null)
         {
             var model = (IMongoEntityModel) _entityModels.GetOrAdd(entityType, () => Activator.CreateInstance(
-                typeof(MongoEntityModel<>).MakeGenericType(entityType)));
+                typeof(MongoEntityModel<>).MakeGenericType(entityType))!);
 
             buildAction?.Invoke(model);
         }
@@ -42,7 +41,7 @@ namespace JustCSharp.Database.MongoDB.Model
         
         public virtual MongoModelBuilder ApplyConfigurationsFromAssembly(
             Assembly assembly,
-            Func<Type, bool> predicate = null)
+            Func<Type, bool>? predicate = null)
         {
             var applyEntityConfigurationMethod = typeof(MongoModelBuilder)
                 .GetMethods()

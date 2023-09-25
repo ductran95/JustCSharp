@@ -4,9 +4,9 @@ namespace JustCSharp.Core.DependencyInjection
 {
     public interface ILazyServiceProvider
     {
-        T? LazyGetRequiredService<T>();
+        T LazyGetRequiredService<T>();
 
-        object? LazyGetRequiredService(Type serviceType);
+        object LazyGetRequiredService(Type serviceType);
 
         T? LazyGetService<T>();
 

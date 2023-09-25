@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Core.DependencyInjection;
-using JustCSharp.Core.Logging.Extensions;
 using JustCSharp.Utility.Extensions;
-using Microsoft.Extensions.Logging;
 
 // ReSharper disable SuspiciousTypeConversion.Global
 
@@ -17,11 +14,11 @@ namespace JustCSharp.Uow.UnitOfWork
     {
         protected readonly ILazyServiceProvider _serviceProvider;
         protected readonly Dictionary<Type, IDatabase> _databases;
-        protected UnitOfWorkTransaction _currentTransaction;
+        protected UnitOfWorkTransaction? _currentTransaction;
 
-        public ITransaction CurrentTransaction => _currentTransaction;
+        public ITransaction? CurrentTransaction => _currentTransaction;
 
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkBase));
+        // private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkBase));
         
         public UnitOfWorkBase(ILazyServiceProvider serviceProvider)
         {
@@ -31,12 +28,12 @@ namespace JustCSharp.Uow.UnitOfWork
 
         public virtual bool IsTransactional { get; private set; }
 
-        public virtual IDatabase FindDatabase([NotNull] Type type)
+        public virtual IDatabase? FindDatabase(Type type)
         {
             return _databases.GetOrDefault(type);
         }
 
-        public virtual void AddDatabase([NotNull] Type type, [NotNull] IDatabase database)
+        public virtual void AddDatabase(Type type, IDatabase database)
         {
             if (_databases.ContainsKey(type))
             {
@@ -56,7 +53,7 @@ namespace JustCSharp.Uow.UnitOfWork
             _databases.Add(type, database);
         }
 
-        public virtual IDatabase GetOrAddDatabase([NotNull] Type type, Func<IDatabase> factory)
+        public virtual IDatabase GetOrAddDatabase(Type type, Func<IDatabase> factory)
         {
             var db = FindDatabase(type);
             if (db == null)
@@ -119,7 +116,7 @@ namespace JustCSharp.Uow.UnitOfWork
                     if (!inTransaction)
                     {
                         databaseSupportTransaction.BeginTransaction();
-                        _currentTransaction.ChildrenTransactions.Add(databaseSupportTransaction.CurrentTransaction);
+                        _currentTransaction.ChildrenTransactions.Add(databaseSupportTransaction.CurrentTransaction!);
                     }
                 }
             }
@@ -142,7 +139,7 @@ namespace JustCSharp.Uow.UnitOfWork
                     if (!inTransaction)
                     {
                         await databaseSupportTransaction.BeginTransactionAsync(cancellationToken);
-                        _currentTransaction.ChildrenTransactions.Add(databaseSupportTransaction.CurrentTransaction);
+                        _currentTransaction.ChildrenTransactions.Add(databaseSupportTransaction.CurrentTransaction!);
                     }
                 }
             }
