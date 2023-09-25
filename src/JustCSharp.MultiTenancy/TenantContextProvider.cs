@@ -1,8 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Core.DependencyInjection;
-using JustCSharp.Core.Logging.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace JustCSharp.MultiTenancy
 {
@@ -10,9 +8,9 @@ namespace JustCSharp.MultiTenancy
     {
         protected readonly ILazyServiceProvider _serviceProvider;
 
-        protected ITenantContext _tenantContext;
+        protected ITenantContext? _tenantContext;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(TenantContextBase));
+        // private ILogger? Logger => _serviceProvider.GetLogger(typeof(TenantContextBase));
 
         public TenantContextProvider(ILazyServiceProvider serviceProvider)
         {
@@ -55,9 +53,9 @@ namespace JustCSharp.MultiTenancy
     {
         protected readonly ILazyServiceProvider _serviceProvider;
         
-        protected TTenantContext _tenantContext;
+        protected TTenantContext? _tenantContext;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(TenantContextProvider<>));
+        // private ILogger? Logger => _serviceProvider.GetLogger(typeof(TenantContextProvider<>));
 
         protected TenantContextProvider(ILazyServiceProvider serviceProvider)
         {

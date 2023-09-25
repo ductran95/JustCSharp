@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JustCSharp.Data.Requests;
@@ -14,7 +15,7 @@ namespace JustCSharp.Data.Linq
             }
 
             var oldFilter = request.Filters.FirstOrDefault(x =>
-                x.Field.ToLower() == filter.Field.ToLower());
+                x.Field != null && x.Field.Equals(filter.Field, StringComparison.InvariantCultureIgnoreCase));
 
             if (oldFilter != null)
             {

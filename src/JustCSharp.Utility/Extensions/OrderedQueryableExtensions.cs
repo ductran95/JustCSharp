@@ -37,7 +37,11 @@ namespace JustCSharp.Utility.Extensions
 
             foreach (var prop in properties)
             {
-                PropertyInfo pi = propertyType.GetProperty(prop);
+                PropertyInfo? pi = propertyType.GetProperty(prop);
+                if (pi == null)
+                {
+                    continue;
+                }
                 exp = Expression.Property(exp, pi);
                 propertyType = pi.PropertyType;
             }
@@ -50,7 +54,7 @@ namespace JustCSharp.Utility.Extensions
                                                                             method.GetGenericArguments().Length == 2 &&
                                                                             method.GetParameters().Length == 2)
                 .MakeGenericMethod(typeof(T), propertyType)
-                .Invoke(null, new object[] {query, lambda});
+                .Invoke(null, new object[] {query, lambda})!;
 
             return (IOrderedQueryable<T>)result;
         }

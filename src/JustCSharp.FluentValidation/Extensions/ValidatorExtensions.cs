@@ -7,7 +7,6 @@ using FluentValidation;
 using FluentValidation.Results;
 using JustCSharp.Core.Exceptions;
 using JustCSharp.Data;
-using JustCSharp.Data.Constants;
 using JustCSharp.Data.Requests;
 using JustCSharp.Utility.Extensions;
 using JustCSharp.Utility.Helpers;
@@ -91,19 +90,21 @@ namespace JustCSharp.FluentValidation.Extensions
         public static IEnumerable<ValidationFailure> Validate<T>(this IEnumerable<IValidator<T>> validators,
             T data, bool throwException = true)
         {
-            var requestName = data.GetGenericTypeName();
+            var requestName = data?.GetGenericTypeName();
 
-            if (validators.Any())
+            var enumerable = validators.ToList();
+            if (enumerable.Any())
             {
-                var errors = validators.Select(v => v.Validate(data)).SelectMany(x => x.Errors);
+                var errors = enumerable.Select(v => v.Validate(data)).SelectMany(x => x.Errors);
 
-                if (throwException && errors.Any())
+                var validationFailures = errors.ToList();
+                if (throwException && validationFailures.Any())
                 {
-                    throw new BadRequestException(errors.Select(x => x.ToError()),
+                    throw new BadRequestException(validationFailures.Select(x => x.ToError()),
                         $"Validation Errors for {requestName}");
                 }
 
-                return errors;
+                return validationFailures;
             }
 
             return new List<ValidationFailure>();
@@ -113,20 +114,23 @@ namespace JustCSharp.FluentValidation.Extensions
             this IEnumerable<IValidator<T>> validators,
             T data, bool throwException = true, CancellationToken cancellationToken = default)
         {
-            var requestName = data.GetGenericTypeName();
+            var requestName = data?.GetGenericTypeName();
 
-            if (validators.Any())
+            var enumerable = validators.ToList();
+            if (enumerable.Any())
             {
-                var errors = await validators.Select(async v => await v.ValidateAsync(data, cancellationToken))
+                var errors = await enumerable.Select(async v => await v.ValidateAsync(data, cancellationToken))
                     .SelectManyAsync(x => x.Errors);
 
-                if (throwException && errors.Any())
+                var validationFailures = errors.ToList();
+                
+                if (throwException && validationFailures.Any())
                 {
-                    throw new BadRequestException(errors.Select(x => x.ToError()),
+                    throw new BadRequestException(validationFailures.Select(x => x.ToError()),
                         $"Validation Errors for {requestName}");
                 }
 
-                return errors;
+                return validationFailures;
             }
 
             return new List<ValidationFailure>();
@@ -139,15 +143,15 @@ namespace JustCSharp.FluentValidation.Extensions
 
         public static BadRequestException ReturnBadRequestException(
             this IEnumerable<ValidationFailure> validationFailures, string message = "",
-            Exception innerException = null)
+            Exception? innerException = null)
         {
-            return new BadRequestException(validationFailures?.Select(ToError), message, innerException);
+            return new BadRequestException(validationFailures.Select(ToError), message, innerException);
         }
 
         public static BadRequestException ReturnBadRequestException(
-            this ValidationFailure validationFailure, string message = "", Exception innerException = null)
+            this ValidationFailure validationFailure, string message = "", Exception? innerException = null)
         {
-            return new BadRequestException(validationFailure?.ToError(), message, innerException);
+            return new BadRequestException(validationFailure.ToError(), message, innerException);
         }
     }
 }

@@ -53,7 +53,7 @@ namespace JustCSharp.Utility.Helpers
         public static string GetCurrentMethodName()
         {
             StackTrace stackTrace = new StackTrace();
-            StackFrame stackFrame = stackTrace.GetFrame(1);
+            StackFrame? stackFrame = stackTrace.GetFrame(1);
 
             if (stackFrame == null)
             {

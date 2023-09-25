@@ -33,7 +33,11 @@ namespace JustCSharp.Utility.Helpers
 
             foreach (var prop in properties)
             {
-                PropertyInfo pi = propertyType.GetProperty(prop);
+                PropertyInfo? pi = propertyType.GetProperty(prop);
+                if (pi == null)
+                {
+                    continue;
+                }
                 propertyExp = Expression.Property(propertyExp, pi);
                 propertyType = pi.PropertyType;
             }
@@ -53,7 +57,11 @@ namespace JustCSharp.Utility.Helpers
 
             foreach (var prop in properties)
             {
-                PropertyInfo pi = propertyType.GetProperty(prop);
+                PropertyInfo? pi = propertyType.GetProperty(prop);
+                if (pi == null)
+                {
+                    continue;
+                }
                 propertyExp = Expression.Property(propertyExp, pi);
                 propertyType = pi.PropertyType;
             }
@@ -73,7 +81,11 @@ namespace JustCSharp.Utility.Helpers
 
             foreach (var prop in properties)
             {
-                PropertyInfo pi = propertyType.GetProperty(prop);
+                PropertyInfo? pi = propertyType.GetProperty(prop);
+                if (pi == null)
+                {
+                    continue;
+                }
                 propertyExp = Expression.Property(propertyExp, pi);
                 propertyType = pi.PropertyType;
             }
@@ -84,9 +96,9 @@ namespace JustCSharp.Utility.Helpers
         }
         
         public static Expression<Func<T, bool>> CreateContainExpression<T>(ParameterExpression param, string property,
-            string data, StringComparison? stringComparison)
+            string? data, StringComparison? stringComparison)
         {
-            MethodInfo containMethod = typeof(string).GetMethod("Contains", new[] {typeof(string)});
+            MethodInfo containMethod = typeof(string).GetMethod("Contains", new[] {typeof(string)})!;
             
             string[] properties = property.Split('.');
             Type propertyType = typeof(T);
@@ -95,7 +107,11 @@ namespace JustCSharp.Utility.Helpers
 
             foreach (var prop in properties)
             {
-                PropertyInfo pi = propertyType.GetProperty(prop);
+                PropertyInfo? pi = propertyType.GetProperty(prop);
+                if (pi == null)
+                {
+                    continue;
+                }
                 propertyExp = Expression.Property(propertyExp, pi);
                 propertyType = pi.PropertyType;
             }
@@ -107,15 +123,15 @@ namespace JustCSharp.Utility.Helpers
                 {
                     case StringComparison.CurrentCultureIgnoreCase:
                     case StringComparison.OrdinalIgnoreCase:
-                        dataExp = Expression.Constant(data.ToLower(), propertyType);
+                        dataExp = Expression.Constant(data?.ToLower(), propertyType);
                         
-                        MethodInfo toLowerMethod = typeof(string).GetMethod("ToLower");
+                        MethodInfo toLowerMethod = typeof(string).GetMethod("ToLower")!;
                         return Expression.Lambda<Func<T, bool>>(Expression.Call(Expression.Call(propertyExp, toLowerMethod), containMethod, dataExp), param);
                     
                     case StringComparison.InvariantCultureIgnoreCase:
-                        dataExp = Expression.Constant(data.ToLowerInvariant(), propertyType);
+                        dataExp = Expression.Constant(data?.ToLowerInvariant(), propertyType);
                         
-                        MethodInfo toLowerInvariantMethod = typeof(string).GetMethod("ToLowerInvariant");
+                        MethodInfo toLowerInvariantMethod = typeof(string).GetMethod("ToLowerInvariant")!;
                         return Expression.Lambda<Func<T, bool>>(Expression.Call(Expression.Call(propertyExp, toLowerInvariantMethod), containMethod, dataExp), param);
                     
                     default:
@@ -140,7 +156,11 @@ namespace JustCSharp.Utility.Helpers
 
             foreach (var prop in properties)
             {
-                PropertyInfo pi = propertyType.GetProperty(prop);
+                PropertyInfo? pi = propertyType.GetProperty(prop);
+                if (pi == null)
+                {
+                    continue;
+                }
                 propertyExp = Expression.Property(propertyExp, pi);
                 propertyType = pi.PropertyType;
             }
@@ -148,9 +168,9 @@ namespace JustCSharp.Utility.Helpers
             var listType = typeof(List<>).MakeGenericType(propertyType);
 
             var listData = data.Cast<JsonElement>().Select(x => x.ToObject(propertyType)).ToList();
-            MethodInfo containMethod = listType.GetMethod("Contains", new[] {propertyType});
+            MethodInfo containMethod = listType.GetMethod("Contains", new[] {propertyType})!;
 
-            object listDataWithType = listData.ChangeType(propertyType);
+            object? listDataWithType = listData.ChangeType(propertyType);
             var dataExp = Expression.Constant(listDataWithType);
             
             // ReSharper disable once AssignNullToNotNullAttribute

@@ -15,12 +15,12 @@ namespace JustCSharp.Data.Entities
 
         public virtual object GetKey()
         {
-            return Id;
+            return Id!;
         }
 
         public abstract void CheckAndSetId();
         
-        public virtual void CheckAndSetAudit(string currentUser)
+        public virtual void CheckAndSetAudit(string? currentUser)
         {
             var curTime = DateTime.UtcNow;
 
@@ -34,7 +34,7 @@ namespace JustCSharp.Data.Entities
             }
         }
         
-        public virtual void CheckAndSetDeleteAudit(string currentUser)
+        public virtual void CheckAndSetDeleteAudit(string? currentUser)
         {
             var curTime = DateTime.UtcNow;
             DeletedOn = curTime;

@@ -9,7 +9,7 @@ namespace JustCSharp.MultiTenancy.Exceptions
 {
     public class NoTenantException: DomainException
     {
-        public NoTenantException(string message = "", Exception innerException = null) : base(message, innerException)
+        public NoTenantException(string message = "", Exception? innerException = null) : base(message, innerException)
         {
         }
 

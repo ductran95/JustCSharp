@@ -9,23 +9,32 @@ namespace JustCSharp.Data.Linq
     {
         public static IQueryable<T> FilterBy<T>(this IQueryable<T> query, IEnumerable<FilterRequest>? filters)
         {
-            if (filters == null || !filters.Any())
+            var filterRequests = filters as FilterRequest[] ?? filters?.ToArray();
+            if (filterRequests == null || !filterRequests.Any())
             {
                 return query;
             }
             
-            var exp = filters.ToExpression<T>();
-            return query.Where(exp);
+            var exp = filterRequests.ToExpression<T>();
+            if (exp != null)
+            {
+                return query.Where(exp);
+            }
+            else
+            {
+                return query;
+            }
         }
 
         public static IQueryable<T> SortBy<T>(this IQueryable<T> query, IEnumerable<SortRequest>? sorts)
         {
-            if (sorts == null || !sorts.Any())
+            var sortRequests = sorts as SortRequest[] ?? sorts?.ToArray();
+            if (sortRequests == null || !sortRequests.Any())
             {
                 return query;
             }
             
-            var firstSort = sorts.FirstOrDefault();
+            var firstSort = sortRequests.First();
             IOrderedQueryable<T>? result = null;
 
             // ReSharper disable once PossibleNullReferenceException
@@ -38,9 +47,9 @@ namespace JustCSharp.Data.Linq
                 result = query.OrderByDescending(firstSort.Field);
             }
 
-            for (int i = 1; i < sorts.Count(); i++)
+            for (int i = 1; i < sortRequests.Count(); i++)
             {
-                var sort = sorts.ElementAt(i);
+                var sort = sortRequests.ElementAt(i);
                 if (sort.Asc)
                 {
                     result = result.ThenBy(sort.Field);

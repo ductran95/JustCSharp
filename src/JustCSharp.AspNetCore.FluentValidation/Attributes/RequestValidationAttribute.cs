@@ -21,7 +21,10 @@ public class RequestValidationAttribute : ActionFilterAttribute
             var errors = new List<ValidationFailure>();
 
             foreach (var prop in context.ModelState.ToDictionary(x => x.Key, x => x.Value))
-                errors.AddRange(prop.Value.Errors.Select(x => new ValidationFailure(prop.Key, x.ErrorMessage)));
+            {
+                if (prop.Value != null)
+                    errors.AddRange(prop.Value.Errors.Select(x => new ValidationFailure(prop.Key, x.ErrorMessage)));
+            }
 
             if (errors.Any()) throw new BadRequestException(errors.Select(x => x.ToError()));
         }

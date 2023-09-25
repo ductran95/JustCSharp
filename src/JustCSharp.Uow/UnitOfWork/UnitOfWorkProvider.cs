@@ -1,8 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Core.DependencyInjection;
-using JustCSharp.Core.Logging.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace JustCSharp.Uow.UnitOfWork
 {
@@ -10,9 +8,9 @@ namespace JustCSharp.Uow.UnitOfWork
     {
         protected readonly ILazyServiceProvider _serviceProvider;
 
-        protected IUnitOfWork _unitOfWork;
+        protected IUnitOfWork? _unitOfWork;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProvider));
+        // private ILogger? Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProvider));
 
         public UnitOfWorkProvider(ILazyServiceProvider serviceProvider)
         {
@@ -57,9 +55,9 @@ namespace JustCSharp.Uow.UnitOfWork
     {
         protected readonly ILazyServiceProvider _serviceProvider;
 
-        protected TUnitOfWork _unitOfWork;
+        protected TUnitOfWork? _unitOfWork;
         
-        private ILogger Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProvider<>));
+        // private ILogger? Logger => _serviceProvider.GetLogger(typeof(UnitOfWorkProvider<>));
 
         protected UnitOfWorkProvider(ILazyServiceProvider serviceProvider)
         {

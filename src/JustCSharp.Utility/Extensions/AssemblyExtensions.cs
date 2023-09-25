@@ -10,7 +10,7 @@ namespace JustCSharp.Utility.Extensions
         public static List<Assembly> GetAssemblies(this AppDomain appDomain, string prefix)
         {
             var allAssemblies = appDomain.GetAssemblies();
-            return allAssemblies.Where(x => x.GetName().Name.StartsWith(prefix)).ToList();
+            return allAssemblies.Where(x => x.GetName().Name?.StartsWith(prefix) ?? false).ToList();
         }
     }
 }

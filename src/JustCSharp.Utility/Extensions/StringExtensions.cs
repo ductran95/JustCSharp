@@ -4,7 +4,7 @@ namespace JustCSharp.Utility.Extensions
 {
     public static class StringExtensions
     {
-        public static object ToType(this string? input, Type type)
+        public static object? ToType(this string? input, Type type)
         {
             bool isNullable = false;
             Type dataType = type;
@@ -83,7 +83,7 @@ namespace JustCSharp.Utility.Extensions
             return result;
         }
 
-        public static object ToType<T>(this string input)
+        public static object? ToType<T>(this string input)
         {
             return input.ToType(typeof(T));
         }

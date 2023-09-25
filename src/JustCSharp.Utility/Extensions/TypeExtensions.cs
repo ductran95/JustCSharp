@@ -45,7 +45,7 @@ namespace JustCSharp.Utility.Extensions
             // List
             if (genericTypes.Any())
             {
-                return genericTypes.LastOrDefault(); // get last for select query
+                return genericTypes.Last(); // get last for select query
             }
             else
             {

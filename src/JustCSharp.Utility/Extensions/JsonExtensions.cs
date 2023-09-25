@@ -85,7 +85,7 @@ namespace JustCSharp.Utility.Extensions
 
             if (nonNullType != null)
             {
-                return result.ToNullable();
+                return result?.ToNullable();
             }
             
             return result;

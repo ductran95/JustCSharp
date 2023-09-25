@@ -11,8 +11,8 @@ namespace JustCSharp.Data.Requests
 {
     public class FilterRequest: IRequest, IFilterRequest
     {
-        public string Field { get; set; }
-        public string ValueString { get; set; }
+        public string? Field { get; set; }
+        public string? ValueString { get; set; }
         public Guid? ValueGuid { get; set; }
         public DateTime? ValueDateTimeFrom { get; set; }
         public DateTime? ValueDateTimeTo { get; set; }
@@ -93,10 +93,10 @@ namespace JustCSharp.Data.Requests
             return expression;
         }
         
-        public Expression<Func<TEntity, bool>> ToExpression<TEntity>(PropertyInfo[] properties, ParameterExpression param)
+        public Expression<Func<TEntity, bool>>? ToExpression<TEntity>(PropertyInfo[] properties, ParameterExpression param)
         {
             var prop = properties.FirstOrDefault(x => x.Name == Field);
-            Expression<Func<TEntity, bool>> expression = entity => true;
+            Expression<Func<TEntity, bool>>? expression = null;
 
             if (prop == null)
             {
@@ -105,8 +105,8 @@ namespace JustCSharp.Data.Requests
             
             if (ValueDateTimeFrom != null || ValueDateTimeTo != null)
             {
-                Expression<Func<TEntity, bool>> expressionFrom = null;
-                Expression<Func<TEntity, bool>> expressionTo = null;
+                Expression<Func<TEntity, bool>>? expressionFrom = null;
+                Expression<Func<TEntity, bool>>? expressionTo = null;
 
                 if (ValueDateTimeFrom != null)
                 {
@@ -123,10 +123,10 @@ namespace JustCSharp.Data.Requests
                 if (expressionFrom != null && expressionTo != null)
                 {
                     var leftVisitor = new ReplaceExpressionVisitor(expressionFrom.Parameters[0], param);
-                    var left = leftVisitor.Visit(expressionFrom.Body);
+                    var left = leftVisitor.Visit(expressionFrom.Body)!;
             
                     var rightVisitor = new ReplaceExpressionVisitor(expressionTo.Parameters[0], param);
-                    var right = rightVisitor.Visit(expressionTo.Body);
+                    var right = rightVisitor.Visit(expressionTo.Body)!;
                     
                     expression = ExpressionHelper.CreateAndExpression<TEntity>(param, left, right);
                 }
@@ -137,8 +137,8 @@ namespace JustCSharp.Data.Requests
             }
             else if (ValueNumberFrom != null || ValueNumberTo != null)
             {
-                Expression<Func<TEntity, bool>> expressionFrom = null;
-                Expression<Func<TEntity, bool>> expressionTo = null;
+                Expression<Func<TEntity, bool>>? expressionFrom = null;
+                Expression<Func<TEntity, bool>>? expressionTo = null;
 
                 if (ValueNumberFrom != null)
                 {
@@ -155,10 +155,10 @@ namespace JustCSharp.Data.Requests
                 if (expressionFrom != null && expressionTo != null)
                 {
                     var leftVisitor = new ReplaceExpressionVisitor(expressionFrom.Parameters[0], param);
-                    var left = leftVisitor.Visit(expressionFrom.Body);
+                    var left = leftVisitor.Visit(expressionFrom.Body)!;
             
                     var rightVisitor = new ReplaceExpressionVisitor(expressionTo.Parameters[0], param);
-                    var right = rightVisitor.Visit(expressionTo.Body);
+                    var right = rightVisitor.Visit(expressionTo.Body)!;
                     
                     expression = ExpressionHelper.CreateAndExpression<TEntity>(param, left, right);
                 }
@@ -186,7 +186,7 @@ namespace JustCSharp.Data.Requests
     
     public class FilterRequest<T>: IRequest, IFilterRequest
     {
-        public string Field { get; set; } = default!;
+        public string? Field { get; set; }
         public FilterOperator Operator { get; set; }
         public T? Value { get; set; }
 
@@ -194,7 +194,7 @@ namespace JustCSharp.Data.Requests
         {
         }
 
-        public FilterRequest(string field, FilterOperator @operator, T? value)
+        public FilterRequest(string? field, FilterOperator @operator, T? value)
         {
             Field = field;
             Operator = @operator;

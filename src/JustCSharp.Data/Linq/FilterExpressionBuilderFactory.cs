@@ -8,8 +8,8 @@ namespace JustCSharp.Data.Linq;
 
 public static class FilterExpressionBuilderFactory
 {
-    private static readonly Type _interfaceType = typeof(IFilterRequest);
-    private static readonly List<IFilterExpressionBuilder> _filterExpressionBuilders = new();
+    private static readonly Type InterfaceType = typeof(IFilterRequest);
+    private static readonly List<IFilterExpressionBuilder> FilterExpressionBuilders = new();
 
     static FilterExpressionBuilderFactory()
     {
@@ -19,11 +19,11 @@ public static class FilterExpressionBuilderFactory
     public static void ScanFilterExpressionBuilder(Assembly assembly)
     {
         var implementationTypes = assembly.GetTypes()
-            .Where(x => x.IsClass && !x.IsAbstract && _interfaceType.IsAssignableFrom(x));
+            .Where(x => x.IsClass && !x.IsAbstract && InterfaceType.IsAssignableFrom(x));
 
         foreach (var implementationType in implementationTypes)
         {
-            _filterExpressionBuilders.Add(Activator.CreateInstance(implementationType) as IFilterExpressionBuilder);
+            FilterExpressionBuilders.Add((Activator.CreateInstance(implementationType) as IFilterExpressionBuilder)!);
         }
     }
     
@@ -34,6 +34,6 @@ public static class FilterExpressionBuilderFactory
 
     public static IFilterExpressionBuilder CreateBuilder(IFilterRequest filterRequest)
     {
-        return _filterExpressionBuilders.First(x => x.IsSatisfied(filterRequest));
+        return FilterExpressionBuilders.First(x => x.IsSatisfied(filterRequest));
     }
 }
