@@ -11,10 +11,6 @@ namespace JustCSharp.Database.MongoDB
         {
         }
 
-        protected MongoDbException([NotNull] SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-
         public MongoDbException([CanBeNull] string message) : base(message)
         {
         }

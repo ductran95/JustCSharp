@@ -10,10 +10,6 @@ namespace JustCSharp.Uow
         {
         }
 
-        protected InfrastructureException([NotNull] SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-
         public InfrastructureException([CanBeNull] string message) : base(message)
         {
         }
