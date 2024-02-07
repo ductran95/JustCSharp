@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;netstandard2.1</TargetFrameworks>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" />
-      <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     </ItemGroup>
 
     <ItemGroup>
@@ -16,4 +15,7 @@
       <ProjectReference Include="..\JustCSharp.Utility\JustCSharp.Utility.csproj" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+    </ItemGroup>
 </Project>
