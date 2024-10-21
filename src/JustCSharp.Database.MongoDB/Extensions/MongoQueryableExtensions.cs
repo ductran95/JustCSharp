@@ -3,13 +3,12 @@ using System.Linq;
 using JustCSharp.Data.Linq;
 using JustCSharp.Data.Requests;
 using JustCSharp.Utility.Extensions;
-using MongoDB.Driver.Linq;
 
 namespace JustCSharp.Database.MongoDB.Extensions
 {
     public static class MongoQueryableExtensions
     {
-        public static IMongoQueryable<T> FilterBy<T>(this IMongoQueryable<T> query, IEnumerable<FilterRequest>? filters)
+        public static IQueryable<T> FilterBy<T>(this IQueryable<T> query, IEnumerable<FilterRequest>? filters)
         {
             var filterRequests = filters as FilterRequest[] ?? filters?.ToArray();
             
@@ -19,10 +18,10 @@ namespace JustCSharp.Database.MongoDB.Extensions
             }
             
             var exp = filterRequests.ToExpression<T>();
-            return query.Where(exp);
+            return exp != null ? query.Where(exp) : query;
         }
 
-        public static IMongoQueryable<T> SortBy<T>(this IMongoQueryable<T> query, IEnumerable<SortRequest>? sorts)
+        public static IQueryable<T> SortBy<T>(this IQueryable<T> query, IEnumerable<SortRequest>? sorts)
         {
             var sortRequests = sorts as SortRequest[] ?? sorts?.ToArray();
             
@@ -57,10 +56,10 @@ namespace JustCSharp.Database.MongoDB.Extensions
                 }
             }
             
-            return (result as IMongoQueryable<T>)!;
+            return (result as IQueryable<T>)!;
         }
         
-        public static IMongoQueryable<T> PagingBy<T>(this IMongoQueryable<T> query, int page, int pageSize)
+        public static IQueryable<T> PagingBy<T>(this IQueryable<T> query, int page, int pageSize)
         {
             var skip = (page - 1) * pageSize;
             

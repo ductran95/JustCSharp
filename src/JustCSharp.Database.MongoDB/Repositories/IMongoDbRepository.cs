@@ -1,9 +1,9 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JustCSharp.Data.Entities;
 using JustCSharp.Uow;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace JustCSharp.Database.MongoDB.Repositories
 {
@@ -16,8 +16,8 @@ namespace JustCSharp.Database.MongoDB.Repositories
         IMongoCollection<TEntity> GetCollection();
         Task<IMongoCollection<TEntity>> GetCollectionAsync(CancellationToken cancellationToken = default);
         
-        IMongoQueryable<TEntity> GetMongoQueryable();
-        Task<IMongoQueryable<TEntity>> GetMongoQueryableAsync(CancellationToken cancellationToken = default);
+        IQueryable<TEntity> GetMongoQueryable();
+        Task<IQueryable<TEntity>> GetMongoQueryableAsync(CancellationToken cancellationToken = default);
         
         IAggregateFluent<TEntity> GetAggregate();
         Task<IAggregateFluent<TEntity>> GetAggregateAsync(CancellationToken cancellationToken = default);

@@ -74,7 +74,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
             return _dbContext.Collection<TEntity>();
         }
 
-        public IMongoQueryable<TEntity> GetMongoQueryable()
+        public IQueryable<TEntity> GetMongoQueryable()
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetMongoQueryable");
             _dbContext.CheckStateAndConnect();
@@ -87,7 +87,7 @@ namespace JustCSharp.Database.MongoDB.Repositories
             );
         }
 
-        public async Task<IMongoQueryable<TEntity>> GetMongoQueryableAsync(CancellationToken cancellationToken = default)
+        public async Task<IQueryable<TEntity>> GetMongoQueryableAsync(CancellationToken cancellationToken = default)
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetMongoQueryableAsync");
             await _dbContext.CheckStateAndConnectAsync(cancellationToken);
@@ -140,39 +140,35 @@ namespace JustCSharp.Database.MongoDB.Repositories
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.Find");
             var query = GetMongoQueryable();
-            return IAsyncCursorSourceExtensions.FirstOrDefault(query
-                    .Where(predicate));
+            return query.FirstOrDefault(predicate);
         }
 
         public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.FindAsync");
             var query = await GetMongoQueryableAsync(cancellationToken);
-            return await MongoQueryable.Where(query, predicate)
-                .FirstOrDefaultAsync(cancellationToken);
+            return await query.FirstOrDefaultAsync(predicate, cancellationToken: cancellationToken);
         }
 
         public List<TEntity> GetList(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetList");
             var query = GetMongoQueryable();
-            return IAsyncCursorSourceExtensions.ToList(query
-                    .Where(predicate));
+            return query.Where(predicate).ToList();
         }
 
         public async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true, CancellationToken cancellationToken = default)
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.GetListAsync");
             var query = await GetMongoQueryableAsync(cancellationToken);
-            return await MongoQueryable.Where(query, predicate)
-                .ToListAsync(cancellationToken);
+            return await query.Where(predicate).ToListAsync(cancellationToken: cancellationToken);
         }
         
         #endregion
 
         #region Action
         
-        protected virtual IMongoQueryable<TEntity> ApplyDataFilters(IMongoQueryable<TEntity> query)
+        protected virtual IQueryable<TEntity> ApplyDataFilters(IQueryable<TEntity> query)
         {
             if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
             {
@@ -863,18 +859,16 @@ namespace JustCSharp.Database.MongoDB.Repositories
         public void DeleteMany(Expression<Func<TEntity, bool>> predicate, bool autoSave = false)
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.DeleteMany");
-            var entities = IAsyncCursorSourceExtensions.ToList(GetMongoQueryable()
-                    .Where(predicate));
-
+            var query = GetMongoQueryable();
+            var entities = query.Where(predicate).ToList();
             DeleteMany(entities, autoSave);
         }
 
         public async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
         {
             using var activity = Trace.ActivitySource.StartActivity("MongoDbRepository.DeleteManyAsync");
-            var entities = await MongoQueryable.Where((await GetMongoQueryableAsync(cancellationToken)), predicate)
-                .ToListAsync(cancellationToken);
-
+            var query = await GetMongoQueryableAsync(cancellationToken);
+            var entities = await query.Where(predicate).ToListAsync(cancellationToken: cancellationToken);
             await DeleteManyAsync(entities, autoSave, cancellationToken);
         }
 

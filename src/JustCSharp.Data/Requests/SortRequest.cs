@@ -1,6 +1,5 @@
 using System;
 using System.Linq.Expressions;
-using JustCSharp.Utility.Helpers;
 
 namespace JustCSharp.Data.Requests
 {
